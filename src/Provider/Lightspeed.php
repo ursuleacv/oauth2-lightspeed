@@ -203,7 +203,8 @@ class Lightspeed extends AbstractProvider
      * @param $controlName
      * @param $accountId
      * @param $uniqueId
-     * @return mixed
+     * @param $queryStr
+     * @return string
      */
     private function prepareApiUrl($controlName, $accountId, $uniqueId = null, $queryStr = null)
     {
@@ -223,6 +224,10 @@ class Lightspeed extends AbstractProvider
         return $controlUrl;
     }
 
+    /**
+     * @param array $data
+     * @return string
+     */
     private function buildQueryString($data)
     {
         if (function_exists('http_build_query')) {
