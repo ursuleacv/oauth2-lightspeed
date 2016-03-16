@@ -132,44 +132,4 @@ class LightspeedTest extends \PHPUnit_Framework_TestCase
     //     $this->assertEquals(12345, $user->getAccountId($token));
     // }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
-    // public function testNotSettingADefaultAccountIdWillThrow()
-    // {
-    //     new Lightspeed([
-    //       'clientId' => 'mock_client_id',
-    //       'clientSecret' => 'mock_secret',
-    //       'redirectUri' => 'none',
-    //       'accountId' => ,
-    //     ]);
-    // }
-
-    public function testProperlyHandlesErrorResponses()
-    {
-        $postResponse = m::mock('Psr\Http\Message\ResponseInterface');
-        $postResponse->shouldReceive('getHeader')
-                 ->times(1)
-                 ->andReturn('application/json');
-        $postResponse->shouldReceive('getBody')
-                     ->times(1)
-                     ->andReturn('{"error":{"message":"Foo auth error","type":"OAuthException","code":191}}');
-
-        $client = m::mock('GuzzleHttp\ClientInterface');
-        $client->shouldReceive('send')->times(1)->andReturn($postResponse);
-        $this->provider->setHttpClient($client);
-
-        $errorMessage = '';
-        $errorCode = 0;
-
-        try {
-            $this->provider->getAccessToken('authorization_code', ['code' => 'mock_authorization_code']);
-        } catch (IdentityProviderException $e) {
-            $errorMessage = $e->getMessage();
-            $errorCode = $e->getCode();
-        }
-
-        $this->assertEquals('OAuthException: Foo auth error', $errorMessage);
-        $this->assertEquals(191, $errorCode);
-    }
 }
