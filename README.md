@@ -1,5 +1,7 @@
 # LightSpeed Provider for OAuth 2.0 Client
 
+[![Build Status](https://travis-ci.org/ursuleacv/oauth2-lightspeed.png?branch=master)](https://travis-ci.org/ursuleacv/oauth2-lightspeed)
+
 This package provides LightSpeed OAuth 2.0 support for the PHP League's [OAuth 2.0 Client](https://github.com/ursuleacv/oauth2-client).
 
 This package is compliant with [PSR-1][], [PSR-2][], [PSR-4][], and [PSR-7][]. If you notice compliance oversights, please send a patch via pull request.
