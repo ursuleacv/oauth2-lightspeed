@@ -124,8 +124,7 @@ class Lightspeed extends AbstractProvider
 
         $this->checkApiResponse($response);
 
-        if (isset($response['Sale']) && $this->itemsCount($response) > 0) // should only return 1 sale.
-        {
+        if (isset($response['Sale']) && $this->itemsCount($response) > 0) {
             return $response['Sale'];
         }
 
