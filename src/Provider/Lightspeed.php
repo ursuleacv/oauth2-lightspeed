@@ -93,7 +93,8 @@ class Lightspeed extends AbstractProvider
      */
     public function getAccountId(AccessToken $token)
     {
-        $url = $this->prepareApiUrl('Account', $this->accountId, null) . '?oauth_token=' . $token;
+        $params = ['oauth_token' => $token->getToken()];
+        $url = $this->prepareApiUrl('Account', $this->accountId, null, $params);
         $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
 
         $response = $this->getResponse($request);
@@ -118,7 +119,8 @@ class Lightspeed extends AbstractProvider
         $apiResource = 'Account.Sale';
         $this->context['apiCall'] = $apiResource;
 
-        $url = $this->prepareApiUrl($apiResource, $this->accountId, $saleId) . '?oauth_token=' . $token;
+        $params = ['oauth_token' => $token->getToken()];
+        $url = $this->prepareApiUrl($apiResource, $this->accountId, $saleId, $params);
         $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
         $response = $this->getResponse($request);
 
@@ -140,8 +142,10 @@ class Lightspeed extends AbstractProvider
         $apiResource = 'Account.Shop';
         $this->context['apiCall'] = $apiResource;
 
+        $params = ['oauth_token' => $token->getToken()];
+
         //get url
-        $url = $this->prepareApiUrl($apiResource, $this->accountId, null) . '?oauth_token=' . $token;
+        $url = $this->prepareApiUrl($apiResource, $this->accountId, null, $params);
         //make API call
         $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
         //get response
@@ -160,22 +164,82 @@ class Lightspeed extends AbstractProvider
     }
 
     /**
+     * @param AccessToken $token
+     * @return mixed
+     */
+    public function getCustomer(AccessToken $token, $customerId)
+    {
+        $apiResource = 'Account.Customer';
+        $this->context['apiCall'] = $apiResource;
+
+        $params = array(
+            'oauth_token' => $token->getToken(),
+            'archived' => 0,
+            'limit' => '50',
+            'load_relations' => 'all',
+            'customerID' => $customerId,
+        );
+
+        //get url
+        $url = $this->prepareApiUrl($apiResource, $this->accountId, null, $params);
+        //make API call
+        $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
+        //get response
+        $response = $this->getResponse($request);
+
+        $this->checkApiResponse($response);
+
+        //validate the response
+        if (isset($response['Customer']) && $this->itemsCount($response) == 1) {
+            return $response['Customer'];
+        } elseif (isset($response['Customer']) && $this->itemsCount($response) > 1) {
+            return $response['Customer'];
+        }
+
+        return [];
+    }
+
+    /**
      * @param $controlName
      * @param $accountId
      * @param $uniqueId
-     * @return mixed
+     * @param $queryStr
+     * @return string
      */
-    private function prepareApiUrl($controlName, $accountId, $uniqueId = null)
+    private function prepareApiUrl($controlName, $accountId, $uniqueId = null, $queryStr = null)
     {
         $controlUrl = $this->getBaseLightspeedApiUrl() . str_replace('.', '/', str_replace('Account.', 'Account.' . $accountId . '.', $controlName));
 
         if ($uniqueId) {
             $controlUrl .= '/' . $uniqueId;
         }
+        if ($queryStr && is_array($queryStr)) {
+            $_queryStr = $this->buildQueryString($queryStr);
 
-        $controlUrl .= self::LS_FORMAT;
+            $controlUrl .= self::LS_FORMAT . '?' . $_queryStr;
+        } else {
+            $controlUrl .= self::LS_FORMAT;
+        }
 
         return $controlUrl;
+    }
+
+    /**
+     * @param array $data
+     * @return string
+     */
+    private function buildQueryString($data)
+    {
+        if (function_exists('http_build_query')) {
+            return http_build_query($data);
+        } else {
+            $qs = '';
+            foreach ($data as $key => $value) {
+                $append = urlencode($key) . '=' . urlencode($value);
+                $qs .= $qs ? '&' . $append : $append;
+            }
+            return $qs;
+        }
     }
 
     /**
