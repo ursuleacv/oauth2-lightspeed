@@ -17,11 +17,6 @@ class Lightspeed extends AbstractProvider
     const LS_FORMAT = '.json';
 
     /**
-     * @var mixed
-     */
-    protected $accountId;
-
-    /**
      * @var array
      */
     private $context = ['error' => false, 'apiCall' => ''];
@@ -35,8 +30,6 @@ class Lightspeed extends AbstractProvider
     public function __construct($options = [], array $collaborators = [])
     {
         parent::__construct($options, $collaborators);
-
-        $this->accountId = $options['accountId'];
     }
 
     public function getBaseAuthorizationUrl()
@@ -93,20 +86,9 @@ class Lightspeed extends AbstractProvider
      */
     public function getAccountId(AccessToken $token)
     {
-        $params = ['oauth_token' => $token->getToken()];
-        $url = $this->prepareApiUrl('Account', $this->accountId, null, $params);
-        $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
+        $account = $this->getResourceOwner($token);
 
-        $response = $this->getResponse($request);
-
-        if (isset($response['Account']) && $response['Account']['accountID']) {
-            return (int) $response['Account']['accountID'];
-        }
-
-        if (isset($response['httpCode']) && $response['httpCode'] != '200') {
-            throw new IdentityProviderException($response['message'], $response['httpCode'], $response);
-        }
-
+        return $account->getId();
     }
 
     /**
@@ -119,8 +101,10 @@ class Lightspeed extends AbstractProvider
         $apiResource = 'Account.Sale';
         $this->context['apiCall'] = $apiResource;
 
+        $account = $this->getResourceOwner($token);
+
         $params = ['oauth_token' => $token->getToken()];
-        $url = $this->prepareApiUrl($apiResource, $this->accountId, $saleId, $params);
+        $url = $this->prepareApiUrl($apiResource, $account->getId(), $saleId, $params);
         $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
         $response = $this->getResponse($request);
 
@@ -143,9 +127,11 @@ class Lightspeed extends AbstractProvider
         $this->context['apiCall'] = $apiResource;
 
         $params = ['oauth_token' => $token->getToken()];
+        
+        $account = $this->getResourceOwner($token);
 
         //get url
-        $url = $this->prepareApiUrl($apiResource, $this->accountId, null, $params);
+        $url = $this->prepareApiUrl($apiResource, $account->getId(), null, $params);
         //make API call
         $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
         //get response
@@ -171,7 +157,7 @@ class Lightspeed extends AbstractProvider
     {
         $apiResource = 'Account.Customer';
         $this->context['apiCall'] = $apiResource;
-
+        $account = $this->getResourceOwner($token);
         $params = array(
             'oauth_token' => $token->getToken(),
             'archived' => 0,
@@ -181,7 +167,7 @@ class Lightspeed extends AbstractProvider
         );
 
         //get url
-        $url = $this->prepareApiUrl($apiResource, $this->accountId, null, $params);
+        $url = $this->prepareApiUrl($apiResource, $account->getId(), null, $params);
         //make API call
         $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
         //get response
@@ -200,6 +186,37 @@ class Lightspeed extends AbstractProvider
     }
 
     /**
+     * @param AccessToken $token
+     * @param integer $employeeId
+     * @return mixed
+     */
+    public function getEmployee(AccessToken $token, $employeeId)
+    {
+        $apiResource = 'Account.Employee';
+        $this->context['apiCall'] = $apiResource;
+        $account = $this->getResourceOwner($token);
+        $params = array(
+            'oauth_token' => $token->getToken(),
+            'archived' => 0,
+            'limit' => '1',
+            'load_relations' => 'all',
+            'employeeID' => $employeeId,
+        );
+
+        $url = $this->prepareApiUrl($apiResource, $account->getId(), null, $params); //get url
+        $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token); //make API call
+        $response = $this->getResponse($request); //get response
+        $this->checkApiResponse($response); //check if there is an error
+
+        //validate the response
+        if (isset($response['Employee']) && $this->itemsCount($response) > 0) {
+            return $response['Employee'];
+        }
+
+        return [];
+    }
+
+    /**
      * @param $controlName
      * @param $accountId
      * @param $uniqueId
@@ -208,7 +225,8 @@ class Lightspeed extends AbstractProvider
      */
     private function prepareApiUrl($controlName, $accountId, $uniqueId = null, $queryStr = null)
     {
-        $controlUrl = $this->getBaseLightspeedApiUrl() . str_replace('.', '/', str_replace('Account.', 'Account.' . $accountId . '.', $controlName));
+        $controlUrl = $this->getBaseLightspeedApiUrl();
+        $controlUrl .= str_replace('.', '/', str_replace('Account.', 'Account.' . $accountId . '.', $controlName));
 
         if ($uniqueId) {
             $controlUrl .= '/' . $uniqueId;
@@ -247,11 +265,6 @@ class Lightspeed extends AbstractProvider
      */
     private function checkApiResponse($response)
     {
-        if (empty($this->accountId)) {
-            $message = 'The "accountId" not set. In order to query Shop endpoint an accountId is required.';
-            throw new \Exception($message);
-        }
-
         // must be an error
         if (isset($response['httpCode']) && $response['httpCode'] != '200') {
             $message = $response['httpMessage'] . ': ' . $response['message'] . ' (' . $response['errorClass'] . ')';
@@ -280,7 +293,7 @@ class Lightspeed extends AbstractProvider
      */
     public function getResourceOwnerDetailsUrl(AccessToken $token)
     {
-        return $this->getBaseLightspeedApiUrl() . '/Account/' . $this->accountId . '/Item?oauth_token=' . $token;
+        return $this->getBaseLightspeedApiUrl() . 'Account/.json?oauth_token=' . $token;
     }
 
     /**
@@ -289,7 +302,7 @@ class Lightspeed extends AbstractProvider
      */
     protected function createResourceOwner(array $response, AccessToken $token)
     {
-        return new LightspeedUser($response);
+        return new LightspeedResourceOwner($response);
     }
 
     /**
