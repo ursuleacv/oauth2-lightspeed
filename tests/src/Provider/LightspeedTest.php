@@ -2,23 +2,20 @@
 
 namespace League\OAuth2\Client\Test\Provider;
 
-use Mockery as m;
 use League\OAuth2\Client\Provider\Lightspeed;
 use League\OAuth2\Client\Token\AccessToken;
-use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
+use Mockery as m;
 
 class FooLightspeedProvider extends Lightspeed
 {
     protected function fetchResourceOwnerDetails(AccessToken $token)
     {
-        return json_decode('{"id": 12345, "link": "mock_Lightspeed_url"}', true);
+        return json_decode('{"@attributes":{"count":"1"},"Account":{"accountID":"12345","name":"Boo Name","link":{"@attributes":{"href":"mock_Lightspeed_url"}}}}', true);
     }
 }
 
 class LightspeedTest extends \PHPUnit_Framework_TestCase
 {
-
-    const ACCOUNT_ID = 123;
 
     /**
      * @var Lightspeed
@@ -31,7 +28,6 @@ class LightspeedTest extends \PHPUnit_Framework_TestCase
             'clientId' => 'mock_client_id',
             'clientSecret' => 'mock_secret',
             'redirectUri' => 'none',
-            'accountId' => static::ACCOUNT_ID,
         ]);
     }
 
@@ -60,7 +56,6 @@ class LightspeedTest extends \PHPUnit_Framework_TestCase
     {
         $url = $this->provider->getBaseAccessTokenUrl([]);
         $uri = parse_url($url);
-        $accountId = static::ACCOUNT_ID;
 
         $this->assertEquals('/oauth/access_token.php', $uri['path']);
     }
@@ -120,16 +115,14 @@ class LightspeedTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['employee:all'], $this->provider->getDefaultScopes());
     }
 
-    // public function testUserData()
-    // {
-    //     $provider = new FooLightspeedProvider([
-    //       'accountId' => static::ACCOUNT_ID,
-    //     ]);
+    public function testAccountData()
+    {
+        $provider = new FooLightspeedProvider();
 
-    //     $token = m::mock('League\OAuth2\Client\Token\AccessToken');
-    //     $user = $provider->getResourceOwner($token);
+        $token = m::mock('League\OAuth2\Client\Token\AccessToken');
+        $account = $provider->getResourceOwner($token);
 
-    //     $this->assertEquals(12345, $user->getAccountId($token));
-    // }
-
+        $this->assertEquals(12345, $account->getId($token));
+        $this->assertEquals('Boo Name', $account->getName($token));
+    }
 }

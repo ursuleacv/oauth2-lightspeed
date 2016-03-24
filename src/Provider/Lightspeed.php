@@ -2,6 +2,7 @@
 
 namespace League\OAuth2\Client\Provider;
 
+use GuzzleHttp\Client;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\Exception\LightspeedProviderException;
 use League\OAuth2\Client\Token\AccessToken;
@@ -20,6 +21,11 @@ class Lightspeed extends AbstractProvider
      * @var array
      */
     private $context = ['error' => false, 'apiCall' => ''];
+
+    /**
+     * @var mixed
+     */
+    private $oauthToken;
 
     /**
      * @param array $options
@@ -98,17 +104,36 @@ class Lightspeed extends AbstractProvider
      */
     public function getSale(AccessToken $token, $saleId)
     {
-        $apiResource = 'Account.Sale';
-        $this->context['apiCall'] = $apiResource;
-
-        $account = $this->getResourceOwner($token);
-
+        $this->oauthToken = $token;
         $params = ['oauth_token' => $token->getToken()];
-        $url = $this->prepareApiUrl($apiResource, $account->getId(), $saleId, $params);
-        $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
-        $response = $this->getResponse($request);
+        $response = $this->makeAPICall('Account.Sale', 'GET', $saleId, $params, null);
 
-        $this->checkApiResponse($response);
+        if (isset($response['Sale']) && $this->itemsCount($response) > 0) {
+            return $response['Sale'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param AccessToken $token
+     * @param int $saleId
+     * @param array $saleData
+     * @return mixed
+     */
+    public function updateSale(AccessToken $token, $saleId, $saleData)
+    {
+        $this->oauthToken = $token;
+        $params = ['oauth_token' => $token->getToken()];
+        $response = $this->makeAPICall('Account.Sale', 'PUT', $saleId, $params, $saleData);
+
+        // must be an error
+        if (isset($response['httpCode']) && $response['httpCode'] != '200') {
+            $message = $response['httpMessage'] . ': ' . $response['message'] . ' (' . $response['errorClass'] . ')';
+            throw new IdentityProviderException($message, $response['httpCode'], $response);
+        }
+
+        die;
 
         if (isset($response['Sale']) && $this->itemsCount($response) > 0) {
             return $response['Sale'];
@@ -123,21 +148,9 @@ class Lightspeed extends AbstractProvider
      */
     public function getShops(AccessToken $token)
     {
-        $apiResource = 'Account.Shop';
-        $this->context['apiCall'] = $apiResource;
-
+        $this->oauthToken = $token;
         $params = ['oauth_token' => $token->getToken()];
-        
-        $account = $this->getResourceOwner($token);
-
-        //get url
-        $url = $this->prepareApiUrl($apiResource, $account->getId(), null, $params);
-        //make API call
-        $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
-        //get response
-        $response = $this->getResponse($request);
-
-        $this->checkApiResponse($response);
+        $response = $this->makeAPICall('Account.Shop', 'GET', null, $params, null);
 
         //validate the response
         if (isset($response['Shop']) && $this->itemsCount($response) == 1) {
@@ -151,29 +164,21 @@ class Lightspeed extends AbstractProvider
 
     /**
      * @param AccessToken $token
+     * @param int $customerId
      * @return mixed
      */
     public function getCustomer(AccessToken $token, $customerId)
     {
-        $apiResource = 'Account.Customer';
-        $this->context['apiCall'] = $apiResource;
-        $account = $this->getResourceOwner($token);
+        $this->oauthToken = $token;
         $params = array(
             'oauth_token' => $token->getToken(),
             'archived' => 0,
-            'limit' => '50',
+            'limit' => '1',
             'load_relations' => 'all',
             'customerID' => $customerId,
         );
 
-        //get url
-        $url = $this->prepareApiUrl($apiResource, $account->getId(), null, $params);
-        //make API call
-        $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token);
-        //get response
-        $response = $this->getResponse($request);
-
-        $this->checkApiResponse($response);
+        $response = $this->makeAPICall('Account.Customer', 'GET', null, $params, null);
 
         //validate the response
         if (isset($response['Customer']) && $this->itemsCount($response) == 1) {
@@ -187,14 +192,12 @@ class Lightspeed extends AbstractProvider
 
     /**
      * @param AccessToken $token
-     * @param integer $employeeId
+     * @param int $employeeId
      * @return mixed
      */
     public function getEmployee(AccessToken $token, $employeeId)
     {
-        $apiResource = 'Account.Employee';
-        $this->context['apiCall'] = $apiResource;
-        $account = $this->getResourceOwner($token);
+        $this->oauthToken = $token;
         $params = array(
             'oauth_token' => $token->getToken(),
             'archived' => 0,
@@ -203,10 +206,7 @@ class Lightspeed extends AbstractProvider
             'employeeID' => $employeeId,
         );
 
-        $url = $this->prepareApiUrl($apiResource, $account->getId(), null, $params); //get url
-        $request = $this->getAuthenticatedRequest(self::METHOD_GET, $url, $token); //make API call
-        $response = $this->getResponse($request); //get response
-        $this->checkApiResponse($response); //check if there is an error
+        $response = $this->makeAPICall('Account.Employee', 'GET', $employeeId, $params, null);
 
         //validate the response
         if (isset($response['Employee']) && $this->itemsCount($response) > 0) {
@@ -214,6 +214,76 @@ class Lightspeed extends AbstractProvider
         }
 
         return [];
+    }
+
+    /**
+     * @param AccessToken $token
+     * @param $discountId
+     * @return mixed
+     */
+    public function getDiscount(AccessToken $token, $discountId = null)
+    {
+        $this->oauthToken = $token;
+        $params = ['oauth_token' => $token->getToken()];
+        $response = $this->makeAPICall('Account.Discount', 'GET', $discountId, $params, null);
+
+        if (isset($response['Discount']) && $this->itemsCount($response) > 0) {
+            return $response['Discount'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param AccessToken $token
+     * @param $data
+     * @return mixed
+     */
+    public function createDiscount(AccessToken $token, $data)
+    {
+        $this->oauthToken = $token;
+        $params = ['oauth_token' => $token->getToken()];
+
+        $data['requireCustomer'] = true;
+        $data['archived'] = false;
+
+        $response = $this->makeAPICall('Account.Discount', 'POST', null, $params, $data);
+
+        if (isset($response['Discount']) && $this->itemsCount($response) > 0) {
+            return $response['Discount'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $controlUrl
+     * @param $action
+     * @param $uniqueId
+     * @param $params
+     * @param $data
+     * @return mixed
+     */
+    public function makeAPICall($controlUrl, $action, $uniqueId, $params, $data)
+    {
+        $this->context['apiCall'] = $controlUrl;
+
+        if (is_null($data) || $data == '') {
+            $data = [];
+        }
+
+        $account = $this->getResourceOwner($this->oauthToken);
+
+        $url = $this->prepareApiUrl($controlUrl, $account->getId(), $uniqueId, $params);
+
+        $client = new \GuzzleHttp\Client();
+        $response = $client->request($action, $url, ['json' => $data]);
+
+        $body = (string) $response->getBody();
+        $r = json_decode($body, true);
+
+        $this->checkApiResponse($r);
+        return $r;
     }
 
     /**

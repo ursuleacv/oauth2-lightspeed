@@ -34,6 +34,16 @@ class LightspeedResourceOwner implements ResourceOwnerInterface
     }
 
     /**
+     * Get Account Name
+     *
+     * @return string|null
+     */
+    public function getName()
+    {
+        return $this->getResponseData('Account.name');
+    }
+
+    /**
      * Attempts to pull value from array using dot notation.
      *
      * @param string $path
