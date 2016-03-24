@@ -127,16 +127,68 @@ class Lightspeed extends AbstractProvider
         $params = ['oauth_token' => $token->getToken()];
         $response = $this->makeAPICall('Account.Sale', 'PUT', $saleId, $params, $saleData);
 
-        // must be an error
-        if (isset($response['httpCode']) && $response['httpCode'] != '200') {
-            $message = $response['httpMessage'] . ': ' . $response['message'] . ' (' . $response['errorClass'] . ')';
-            throw new IdentityProviderException($message, $response['httpCode'], $response);
-        }
-
-        die;
-
         if (isset($response['Sale']) && $this->itemsCount($response) > 0) {
             return $response['Sale'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param AccessToken $token
+     * @param $saleId
+     * @return mixed
+     */
+    public function getSaleLine(AccessToken $token, $saleId)
+    {
+        $this->oauthToken = $token;
+        $params = ['oauth_token' => $token->getToken(), 'limit' => 1];
+
+        //return $this->prepareApiUrl('Account.Sale'.'/'.$saleId.'/SaleLine', '125620', null, $params);
+        $response = $this->makeAPICall('Account.Sale' . '/' . $saleId . '/SaleLine', 'GET', null, $params, null);
+
+        if (isset($response['SaleLine']) && $this->itemsCount($response) > 0) {
+            return $response['SaleLine'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param AccessToken $token
+     * @param $saleId
+     * @return mixed
+     */
+    public function updateSaleLine(AccessToken $token, $saleId, $saleLineId, $data)
+    {
+        $this->oauthToken = $token;
+        $params = ['oauth_token' => $token->getToken()];
+
+        //return $this->prepareApiUrl('Account.Sale'.'/'.$saleId.'/SaleLine', '125620', null, $params);
+        $control = 'Account.Sale' . '/' . $saleId . '/SaleLine' . '/' . $saleLineId;
+        $response = $this->makeAPICall($control, 'PUT', null, $params, $data);
+
+        if (isset($response['SaleLine']) && $this->itemsCount($response) > 0) {
+            return $response['SaleLine'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param AccessToken $token
+     * @param $data
+     * @return mixed
+     */
+    public function createSaleLine(AccessToken $token, $data)
+    {
+        $this->oauthToken = $token;
+        $params = ['oauth_token' => $token->getToken()];
+
+        $response = $this->makeAPICall('Account.Sale/49/SaleLine', 'POST', null, $params, $data);
+
+        if (isset($response['SaleLine']) && $this->itemsCount($response) > 0) {
+            return $response['SaleLine'];
         }
 
         return [];
@@ -244,9 +296,6 @@ class Lightspeed extends AbstractProvider
         $this->oauthToken = $token;
         $params = ['oauth_token' => $token->getToken()];
 
-        $data['requireCustomer'] = true;
-        $data['archived'] = false;
-
         $response = $this->makeAPICall('Account.Discount', 'POST', null, $params, $data);
 
         if (isset($response['Discount']) && $this->itemsCount($response) > 0) {
@@ -279,7 +328,7 @@ class Lightspeed extends AbstractProvider
         $client = new \GuzzleHttp\Client();
         $response = $client->request($action, $url, ['json' => $data]);
 
-        $body = (string) $response->getBody();
+        $body = (string) $response->getBody()->read(3024);
         $r = json_decode($body, true);
 
         $this->checkApiResponse($r);
