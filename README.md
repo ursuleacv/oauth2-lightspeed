@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/ursuleacv/oauth2-lightspeed.png?branch=master)](https://travis-ci.org/ursuleacv/oauth2-lightspeed)
 
-This package provides LightSpeed OAuth 2.0 support for the PHP League's [OAuth 2.0 Client](https://github.com/ursuleacv/oauth2-client).
+This package provides LightSpeed OAuth 2.0 support for the PHP League's [OAuth 2.0 Client](https://github.com/thephpleague/oauth2-client).
 
 This package is compliant with [PSR-1][], [PSR-2][], [PSR-4][], and [PSR-7][]. If you notice compliance oversights, please send a patch via pull request.
 
@@ -44,7 +44,6 @@ $provider = new League\OAuth2\Client\Provider\Lightspeed([
     'clientId'                => LIGHTSPEED_CLIENT_ID,
     'clientSecret'            => LIGHTSPEED_CLIENT_SECRET,
     'redirectUri'             => LIGHTSPEED_REDIRECT_URI,
-    'accountId'               => LIGHTSPEED_ACCOUNT_ID,
 ]);
 
 if (!isset($_GET['code'])) {
@@ -75,8 +74,11 @@ $token = $provider->getAccessToken('authorization_code', [
 try {
 
     // We got an access token, let's now get the Account ID and sale details
-    $client = $ls->getAccountId($token);
-    $sale = $ls->getSale($token, 1);
+    $client = $provider->getResourceOwner($token);
+    $merchantos = $provider->merchantosApi($token, $client->getId());
+
+    $clientId = $client->getId();
+    $sale = $merchantos->getSale(1);
 
     echo '<pre>';
     print_r($client); echo '<br>';
