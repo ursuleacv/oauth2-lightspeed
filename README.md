@@ -74,8 +74,11 @@ $token = $provider->getAccessToken('authorization_code', [
 try {
 
     // We got an access token, let's now get the Account ID and sale details
-    $client = $ls->getAccountId($token);
-    $sale = $ls->getSale($token, 1);
+    $client = $provider->getResourceOwner($token);
+    $merchantos = $provider->merchantosApi($token, $client->getId());
+
+    $clientId = $client->getId();
+    $sale = $merchantos->getSale(1);
 
     echo '<pre>';
     print_r($client); echo '<br>';
