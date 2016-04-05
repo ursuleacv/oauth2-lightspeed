@@ -28,7 +28,7 @@ Add the following to your `composer.json` file.
 ```json
 {
     "require": {
-        "ursuleacv/oauth2-lightspeed": "~1.0"
+        "ursuleacv/oauth2-lightspeed": "~2.0"
     }
 }
 ```

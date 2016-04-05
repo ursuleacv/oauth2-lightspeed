@@ -3,13 +3,18 @@
 namespace League\OAuth2\Client\Provider;
 
 use League\OAuth2\Client\Token\AccessToken;
-use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 
 class MerchantOS extends Lightspeed
 {
     const LS_FORMAT = '.json';
 
+    /**
+     * @var mixed
+     */
     private $oauthToken;
+    /**
+     * @var mixed
+     */
     private $accountId;
 
     /**
@@ -18,9 +23,10 @@ class MerchantOS extends Lightspeed
     private $context = ['error' => false, 'apiCall' => ''];
 
     /**
-     * Creates new resource owner.
+     * Creates new MerchantOS
      *
-     * @param array  $response
+     * @param AccessToken $token
+     * @param mixed $accountId
      */
     public function __construct(AccessToken $token, $accountId)
     {
@@ -28,14 +34,13 @@ class MerchantOS extends Lightspeed
         $this->accountId = $accountId;
     }
 
-       /**
-     * @param AccessToken $token
+    /**
      * @param $saleId
      * @return mixed
      */
     public function getSale($saleId)
     {
-        $params = ['oauth_token' => $this->oauthToken];
+        $params = ['oauth_token' => $this->oauthToken, 'load_relations' => 'all', 'orderby'=>'saleLineID', 'orderby_desc'=>1];
         $response = $this->makeAPICall('Account.Sale', 'GET', $saleId, $params, null);
 
         if (isset($response['Sale']) && $this->itemsCount($response) > 0) {
@@ -46,7 +51,6 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param AccessToken $token
      * @param int $saleId
      * @param array $saleData
      * @return mixed
@@ -64,18 +68,20 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param AccessToken $token
-     * @param $saleId
+     * @param int $saleId
+     * @param int $limit
      * @return mixed
      */
-    public function getSaleLine($saleId)
+    public function getSaleLine($saleId, $extra=[])
     {
-        $params = ['oauth_token' => $this->oauthToken, 'limit' => 1];
+        $params = ['oauth_token' => $this->oauthToken];
 
-        //return $this->prepareApiUrl('Account.Sale'.'/'.$saleId.'/SaleLine', '125620', null, $params);
+        $params = array_merge($params, $extra);
         $response = $this->makeAPICall('Account.Sale' . '/' . $saleId . '/SaleLine', 'GET', null, $params, null);
 
-        if (isset($response['SaleLine']) && $this->itemsCount($response) > 0) {
+        if (isset($response['SaleLine']) && $this->itemsCount($response) == 1) {
+            return [$response['SaleLine']];
+        } elseif (isset($response['SaleLine']) && $this->itemsCount($response) > 0) {
             return $response['SaleLine'];
         }
 
@@ -83,7 +89,6 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param AccessToken $token
      * @param $saleId
      * @return mixed
      */
@@ -91,7 +96,6 @@ class MerchantOS extends Lightspeed
     {
         $params = ['oauth_token' => $this->oauthToken];
 
-        //return $this->prepareApiUrl('Account.Sale'.'/'.$saleId.'/SaleLine', '125620', null, $params);
         $control = 'Account.Sale' . '/' . $saleId . '/SaleLine' . '/' . $saleLineId;
         $response = $this->makeAPICall($control, 'PUT', null, $params, $data);
 
@@ -103,15 +107,15 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param AccessToken $token
+     * @param $saleId
      * @param $data
      * @return mixed
      */
-    public function createSaleLine($data)
+    public function createSaleLine($saleId, $data)
     {
         $params = ['oauth_token' => $this->oauthToken];
 
-        $response = $this->makeAPICall('Account.Sale/49/SaleLine', 'POST', null, $params, $data);
+        $response = $this->makeAPICall('Account.Sale' . '/' . $saleId . '/SaleLine', 'POST', null, $params, $data);
 
         if (isset($response['SaleLine']) && $this->itemsCount($response) > 0) {
             return $response['SaleLine'];
@@ -121,7 +125,6 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param AccessToken $token
      * @return mixed
      */
     public function getShops()
@@ -140,7 +143,6 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param AccessToken $token
      * @param int $customerId
      * @return mixed
      */
@@ -167,7 +169,76 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param AccessToken $token
+     * @param int $customerId
+     * @param array $data
+     * @return mixed
+     */
+    public function updateCustomer($customerId, $data)
+    {
+        $params = array(
+            'oauth_token' => $this->oauthToken,
+        );
+
+        $response = $this->makeAPICall('Account.Customer', 'PUT', $customerId, $params, $data);
+
+        //validate the response
+        if (isset($response['Customer']) && $this->itemsCount($response) == 1) {
+            return $response['Customer'];
+        } elseif (isset($response['Customer']) && $this->itemsCount($response) > 1) {
+            return $response['Customer'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCustomField($customFieldId)
+    {
+        $params = array(
+            'oauth_token' => $this->oauthToken,
+            'archived' => 0,
+            'limit' => '1',
+            'load_relations' => 'all',
+            'customFieldID' => $customFieldId,
+        );
+
+        $response = $this->makeAPICall('Account.Customer/CustomField', 'GET', null, $params, null);
+
+        //validate the response
+        if (isset($response['CustomField']) && $this->itemsCount($response) == 1) {
+            return $response['CustomField'];
+        } elseif (isset($response['CustomField']) && $this->itemsCount($response) > 1) {
+            return $response['CustomField'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param array $data
+     * @return mixed
+     */
+    public function createCustomField($data)
+    {
+        $params = array(
+            'oauth_token' => $this->oauthToken,
+        );
+
+        $response = $this->makeAPICall('Account.Customer/CustomField', 'POST', null, $params, $data);
+
+        //validate the response
+        if (isset($response['CustomField']) && $this->itemsCount($response) == 1) {
+            return $response['CustomField'];
+        } elseif (isset($response['CustomField']) && $this->itemsCount($response) > 1) {
+            return $response['CustomField'];
+        }
+
+        return [];
+    }
+
+    /**
      * @param int $employeeId
      * @return mixed
      */
@@ -192,7 +263,6 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param AccessToken $token
      * @param $discountId
      * @return mixed
      */
@@ -209,7 +279,6 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param AccessToken $token
      * @param $data
      * @return mixed
      */
@@ -247,13 +316,12 @@ class MerchantOS extends Lightspeed
         $client = new \GuzzleHttp\Client();
         $response = $client->request($action, $url, ['json' => $data]);
 
-        $body = (string) $response->getBody()->read(3024);
+        $body = (string) $response->getBody();
         $r = json_decode($body, true);
 
         $this->checkApiResponse($r);
         return $r;
     }
-
 
     /**
      * @param $controlName
