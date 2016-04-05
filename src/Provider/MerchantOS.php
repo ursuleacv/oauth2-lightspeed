@@ -40,7 +40,7 @@ class MerchantOS extends Lightspeed
      */
     public function getSale($saleId)
     {
-        $params = ['oauth_token' => $this->oauthToken, 'load_relations' => 'all', 'orderby'=>'saleLineID', 'orderby_desc'=>1];
+        $params = ['oauth_token' => $this->oauthToken, 'load_relations' => 'all', 'orderby' => 'saleLineID', 'orderby_desc' => 1];
         $response = $this->makeAPICall('Account.Sale', 'GET', $saleId, $params, null);
 
         if (isset($response['Sale']) && $this->itemsCount($response) > 0) {
@@ -72,7 +72,7 @@ class MerchantOS extends Lightspeed
      * @param int $limit
      * @return mixed
      */
-    public function getSaleLine($saleId, $extra=[])
+    public function getSaleLine($saleId, $extra = [])
     {
         $params = ['oauth_token' => $this->oauthToken];
 
