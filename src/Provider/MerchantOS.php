@@ -12,10 +12,13 @@ class MerchantOS extends Lightspeed
      * @var mixed
      */
     private $oauthToken;
+
     /**
      * @var mixed
      */
-    private $accountId;
+    protected $accountId;
+
+    protected $userAgent = 'MerchantOS';
 
     /**
      * @var array
@@ -34,13 +37,69 @@ class MerchantOS extends Lightspeed
         $this->accountId = $accountId;
     }
 
+    public function setUserAgent($agent)
+    {
+        $this->userAgent = $agent;
+    }
+
+    /**
+     * @param $itemId
+     * @param $extra
+     * @return mixed
+     */
+    public function getItem($itemId, $extra = [])
+    {
+        $params = [];
+        $response = $this->makeAPICall('Account.Item', 'GET', $itemId, $params, null);
+
+        if (isset($response['Item']) && $this->itemsCount($response) > 0) {
+            return $response['Item'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $itemId
+     * @param $data
+     * @return mixed
+     */
+    public function createItem($data)
+    {
+        $params = [];
+        $response = $this->makeAPICall('Account.Item', 'POST', null, $params, $data);
+
+        if (isset($response['Item']) && $this->itemsCount($response) > 0) {
+            return $response['Item'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $itemId
+     * @param $data
+     * @return mixed
+     */
+    public function updateItem($itemId, $data)
+    {
+        $params = [];
+        $response = $this->makeAPICall('Account.Item', 'PUT', $itemId, $params, $data);
+
+        if (isset($response['Item']) && $this->itemsCount($response) > 0) {
+            return $response['Item'];
+        }
+
+        return [];
+    }
+
     /**
      * @param $saleId
      * @return mixed
      */
     public function getSale($saleId)
     {
-        $params = ['oauth_token' => $this->oauthToken, 'load_relations' => 'all', 'orderby' => 'saleLineID', 'orderby_desc' => 1];
+        $params = ['load_relations' => 'all', 'orderby' => 'saleLineID', 'orderby_desc' => 1];
         $response = $this->makeAPICall('Account.Sale', 'GET', $saleId, $params, null);
 
         if (isset($response['Sale']) && $this->itemsCount($response) > 0) {
@@ -57,10 +116,27 @@ class MerchantOS extends Lightspeed
      */
     public function updateSale($saleId, $saleData)
     {
-        $params = ['oauth_token' => $this->oauthToken];
+        $params = [];
         $response = $this->makeAPICall('Account.Sale', 'PUT', $saleId, $params, $saleData);
 
         if (isset($response['Sale']) && $this->itemsCount($response) > 0) {
+            return $response['Sale'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param array $params
+     * @return mixed
+     */
+    public function getSales($params = [])
+    {
+        $response = $this->makeAPICall('Account.Sale', 'GET', null, $params, null);
+
+        if (isset($response['Sale']) && $this->itemsCount($response) == 1) {
+            return [$response['Sale']];
+        } elseif (isset($response['Sale']) && $this->itemsCount($response) > 1) {
             return $response['Sale'];
         }
 
@@ -74,14 +150,14 @@ class MerchantOS extends Lightspeed
      */
     public function getSaleLine($saleId, $extra = [])
     {
-        $params = ['oauth_token' => $this->oauthToken];
+        $params = [];
 
         $params = array_merge($params, $extra);
         $response = $this->makeAPICall('Account.Sale' . '/' . $saleId . '/SaleLine', 'GET', null, $params, null);
 
         if (isset($response['SaleLine']) && $this->itemsCount($response) == 1) {
             return [$response['SaleLine']];
-        } elseif (isset($response['SaleLine']) && $this->itemsCount($response) > 0) {
+        } elseif (isset($response['SaleLine']) && $this->itemsCount($response) > 1) {
             return $response['SaleLine'];
         }
 
@@ -94,7 +170,7 @@ class MerchantOS extends Lightspeed
      */
     public function updateSaleLine($saleId, $saleLineId, $data)
     {
-        $params = ['oauth_token' => $this->oauthToken];
+        $params = [];
 
         $control = 'Account.Sale' . '/' . $saleId . '/SaleLine' . '/' . $saleLineId;
         $response = $this->makeAPICall($control, 'PUT', null, $params, $data);
@@ -113,7 +189,7 @@ class MerchantOS extends Lightspeed
      */
     public function createSaleLine($saleId, $data)
     {
-        $params = ['oauth_token' => $this->oauthToken];
+        $params = [];
 
         $response = $this->makeAPICall('Account.Sale' . '/' . $saleId . '/SaleLine', 'POST', null, $params, $data);
 
@@ -129,7 +205,7 @@ class MerchantOS extends Lightspeed
      */
     public function getShops()
     {
-        $params = ['oauth_token' => $this->oauthToken];
+        $params = [];
         $response = $this->makeAPICall('Account.Shop', 'GET', null, $params, null);
 
         //validate the response
@@ -149,7 +225,6 @@ class MerchantOS extends Lightspeed
     public function getCustomer($customerId)
     {
         $params = array(
-            'oauth_token' => $this->oauthToken,
             'archived' => 0,
             'limit' => '1',
             'load_relations' => 'all',
@@ -175,10 +250,7 @@ class MerchantOS extends Lightspeed
      */
     public function updateCustomer($customerId, $data)
     {
-        $params = array(
-            'oauth_token' => $this->oauthToken,
-        );
-
+        $params = [];
         $response = $this->makeAPICall('Account.Customer', 'PUT', $customerId, $params, $data);
 
         //validate the response
@@ -197,7 +269,6 @@ class MerchantOS extends Lightspeed
     public function getCustomField($customFieldId)
     {
         $params = array(
-            'oauth_token' => $this->oauthToken,
             'archived' => 0,
             'limit' => '1',
             'load_relations' => 'all',
@@ -222,10 +293,7 @@ class MerchantOS extends Lightspeed
      */
     public function createCustomField($data)
     {
-        $params = array(
-            'oauth_token' => $this->oauthToken,
-        );
-
+        $params = [];
         $response = $this->makeAPICall('Account.Customer/CustomField', 'POST', null, $params, $data);
 
         //validate the response
@@ -245,7 +313,6 @@ class MerchantOS extends Lightspeed
     public function getEmployee($employeeId)
     {
         $params = array(
-            'oauth_token' => $this->oauthToken,
             'archived' => 0,
             'limit' => '1',
             'load_relations' => 'all',
@@ -268,7 +335,7 @@ class MerchantOS extends Lightspeed
      */
     public function getDiscount($discountId = null)
     {
-        $params = ['oauth_token' => $this->oauthToken];
+        $params = [];
         $response = $this->makeAPICall('Account.Discount', 'GET', $discountId, $params, null);
 
         if (isset($response['Discount']) && $this->itemsCount($response) > 0) {
@@ -284,7 +351,7 @@ class MerchantOS extends Lightspeed
      */
     public function createDiscount($data)
     {
-        $params = ['oauth_token' => $this->oauthToken];
+        $params = [];
 
         $response = $this->makeAPICall('Account.Discount', 'POST', null, $params, $data);
 
@@ -313,8 +380,16 @@ class MerchantOS extends Lightspeed
 
         $url = $this->prepareApiUrl($controlUrl, $this->accountId, $uniqueId, $params);
 
+        $headers = [
+            'User-Agent' => $this->userAgent,
+            'Accept' => 'application/vnd.merchantos-v2+json',
+            'Authorization' => 'OAuth ' . $this->oauthToken,
+        ];
+
         $client = new \GuzzleHttp\Client();
-        $response = $client->request($action, $url, ['json' => $data]);
+        $response = $client->request($action, $url, ['headers' => $headers, 'json' => $data]);
+
+        // print_r($response->getHeader('x-ls-api-bucket-level')); die;
 
         $body = (string) $response->getBody();
         $r = json_decode($body, true);

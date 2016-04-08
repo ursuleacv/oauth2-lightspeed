@@ -19,8 +19,7 @@ class Lightspeed extends AbstractProvider
     /**
      * @var mixed
      */
-    private $oauthToken;
-    private $accountId;
+    protected $accountId;
 
     /**
      * @param array $options
