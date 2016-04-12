@@ -18,6 +18,9 @@ class MerchantOS extends Lightspeed
      */
     protected $accountId;
 
+    /**
+     * @var string
+     */
     protected $userAgent = 'MerchantOS';
 
     /**
@@ -37,6 +40,9 @@ class MerchantOS extends Lightspeed
         $this->accountId = $accountId;
     }
 
+    /**
+     * @param $agent
+     */
     public function setUserAgent($agent)
     {
         $this->userAgent = $agent;
@@ -148,16 +154,30 @@ class MerchantOS extends Lightspeed
      * @param int $limit
      * @return mixed
      */
-    public function getSaleLine($saleId, $extra = [])
+    public function getSaleSaleLines($saleId, $params = [])
     {
-        $params = [];
-
-        $params = array_merge($params, $extra);
         $response = $this->makeAPICall('Account.Sale' . '/' . $saleId . '/SaleLine', 'GET', null, $params, null);
 
         if (isset($response['SaleLine']) && $this->itemsCount($response) == 1) {
             return [$response['SaleLine']];
         } elseif (isset($response['SaleLine']) && $this->itemsCount($response) > 1) {
+            return $response['SaleLine'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param int $saleId
+     * @param int $limit
+     * @return mixed
+     */
+    public function getSaleLine($saleLineId)
+    {
+        $params = [];
+        $response = $this->makeAPICall('Account.SaleLine', 'GET', $saleLineId, $params, null);
+
+        if (isset($response['SaleLine']) && $this->itemsCount($response) > 0) {
             return $response['SaleLine'];
         }
 
