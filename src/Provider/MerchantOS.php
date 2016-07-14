@@ -50,15 +50,31 @@ class MerchantOS extends Lightspeed
 
     /**
      * @param $itemId
-     * @param $extra
+     * @param $params
      * @return mixed
      */
-    public function getItem($itemId, $extra = [])
+    public function getItem($itemId, $params = [])
     {
-        $params = [];
         $response = $this->makeAPICall('Account.Item', 'GET', $itemId, $params, null);
 
         if (isset($response['Item']) && $this->itemsCount($response) > 0) {
+            return $response['Item'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $params
+     * @return array
+     */
+    public function getItems($params = [])
+    {
+        $response = $this->makeAPICall('Account.Item', 'GET', null, $params, null);
+
+        if (isset($response['Item']) && $this->itemsCount($response) == 1) {
+            return [$response['Item']];
+        } elseif (isset($response['Item']) && $this->itemsCount($response) > 1) {
             return $response['Item'];
         }
 
@@ -383,6 +399,53 @@ class MerchantOS extends Lightspeed
     }
 
     /**
+     * @param int $saleId
+     * @param array $data
+     * @return mixed
+     */
+    public function createSaleRefund($saleId, $data = [])
+    {
+        $response = $this->makeAPICall('Account.Sale' . '/' . $saleId . '/refund', 'POST', null, [], $data);
+
+        if (isset($response['Sale']) && $this->itemsCount($response) > 0) {
+            return $response['Sale'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param array $params
+     * @return mixed
+     */
+    public function getCreditAccount($params = [])
+    {
+        $response = $this->makeAPICall('Account.CreditAccount', 'GET', null, $params, null);
+        
+        if (isset($response['CreditAccount']) && $this->itemsCount($response) > 0) {
+            return $response['CreditAccount'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param int $creditAccountId
+     * @param array $data
+     * @return mixed
+     */
+    public function createCreditAccount($creditAccountId, $data = [])
+    {
+        $response = $this->makeAPICall('Account.CreditAccount', 'PUT', $creditAccountId, [], $data);
+        
+        if (isset($response['CreditAccount']) && $this->itemsCount($response) > 0) {
+            return $response['CreditAccount'];
+        }
+
+        return [];
+    }
+
+    /**
      * @param $controlUrl
      * @param $action
      * @param $uniqueId
@@ -448,7 +511,7 @@ class MerchantOS extends Lightspeed
      * @param array $data
      * @return string
      */
-    private function buildQueryString($data)
+    protected function buildQueryString($data)
     {
         if (function_exists('http_build_query')) {
             return http_build_query($data);
