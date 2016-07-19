@@ -100,6 +100,22 @@ class MerchantOS extends Lightspeed
 
     /**
      * @param $itemId
+     * @return mixed
+     */
+    public function deleteItem($itemId)
+    {
+        $params = [];
+        $response = $this->makeAPICall('Account.Item', 'DELETE', $itemId, $params, null);
+
+        if (isset($response['Item']) && $this->itemsCount($response) > 0) {
+            return $response['Item'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $itemId
      * @param $data
      * @return mixed
      */
@@ -336,6 +352,23 @@ class MerchantOS extends Lightspeed
         if (isset($response['CustomField']) && $this->itemsCount($response) == 1) {
             return $response['CustomField'];
         } elseif (isset($response['CustomField']) && $this->itemsCount($response) > 1) {
+            return $response['CustomField'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param array $data
+     * @return mixed
+     */
+    public function deleteCustomField($customFieldId)
+    {
+        $params = [];
+        $response = $this->makeAPICall('Account.Customer/CustomField', 'DELETE', $customFieldId, $params, null);
+
+        //validate the response
+        if (isset($response['CustomField']) && $this->itemsCount($response) == 1) {
             return $response['CustomField'];
         }
 
