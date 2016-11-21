@@ -362,6 +362,44 @@ class MerchantOS extends Lightspeed
      * @param array $data
      * @return mixed
      */
+    public function createTaxClass($data)
+    {
+        $params = [];
+        $response = $this->makeAPICall('Account.TaxClass', 'POST', null, $params, $data);
+
+        //validate the response
+        if (isset($response['TaxClass']) && $this->itemsCount($response) == 1) {
+            return $response['TaxClass'];
+        } elseif (isset($response['TaxClass']) && $this->itemsCount($response) > 1) {
+            return $response['TaxClass'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param int $taxClassId
+     * @param array $params
+     * @return mixed
+     */
+    public function getTaxClass($taxClassId, $params)
+    {
+        $response = $this->makeAPICall('Account.TaxClass', 'GET', $taxClassId, $params, $data = []);
+
+        //validate the response
+        if (isset($response['TaxClass']) && $this->itemsCount($response) == 1) {
+            return $response['TaxClass'];
+        } elseif (isset($response['TaxClass']) && $this->itemsCount($response) > 1) {
+            return $response['TaxClass'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param array $data
+     * @return mixed
+     */
     public function deleteCustomField($customFieldId)
     {
         $params = [];
@@ -499,7 +537,7 @@ class MerchantOS extends Lightspeed
         $headers = [
             'User-Agent' => $this->userAgent,
             'Accept' => 'application/vnd.merchantos-v2+json',
-            'Authorization' => 'OAuth ' . $this->oauthToken,
+            'Authorization' => 'Bearer ' . $this->oauthToken,
         ];
 
         $client = new \GuzzleHttp\Client();
