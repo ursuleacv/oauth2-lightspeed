@@ -218,6 +218,8 @@ class MerchantOS extends Lightspeed
 
     /**
      * @param $saleId
+     * @param $saleLineId
+     * @param $data
      * @return mixed
      */
     public function updateSaleLine($saleId, $saleLineId, $data)
@@ -234,6 +236,24 @@ class MerchantOS extends Lightspeed
         return [];
     }
 
+    /**
+     * @param $saleId
+     * @param $saleLineId
+     * @return mixed
+     */
+    public function deleteSaleLine($saleId, $saleLineId)
+    {
+        $params = [];
+
+        $control = 'Account.Sale' . '/' . $saleId . '/SaleLine' . '/' . $saleLineId;
+        $response = $this->makeAPICall($control, 'DELETE', null, $params, null);
+
+        if (isset($response['SaleLine']) && $this->itemsCount($response) > 0) {
+            return $response['SaleLine'];
+        }
+
+        return [];
+    }
     /**
      * @param $saleId
      * @param $data
