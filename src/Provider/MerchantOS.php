@@ -49,6 +49,23 @@ class MerchantOS extends Lightspeed
     }
 
     /**
+     * @param $params
+     * @return array
+     */
+    public function getTags($params = [])
+    {
+        $response = $this->makeAPICall('Account.Tag', 'GET', null, $params, null);
+
+        if (isset($response['Tag']) && $this->itemsCount($response) == 1) {
+            return [$response['Tag']];
+        } elseif (isset($response['Tag']) && $this->itemsCount($response) > 1) {
+            return $response['Tag'];
+        }
+
+        return [];
+    }
+    
+    /**
      * @param $itemId
      * @param $params
      * @return mixed
@@ -489,6 +506,39 @@ class MerchantOS extends Lightspeed
         return [];
     }
 
+    /**
+     * @param $discountId
+     * @param $data
+     * @return mixed
+     */
+    public function updateDiscount($discountId = null, $data)
+    {
+        $params = [];
+        $response = $this->makeAPICall('Account.Discount', 'PUT', $discountId, $params, $data);
+
+        if (isset($response['Discount']) && $this->itemsCount($response) > 0) {
+            return $response['Discount'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $discountId
+     * @return mixed
+     */
+    public function deleteDiscount($discountId = null)
+    {
+        $params = [];
+        $response = $this->makeAPICall('Account.Discount', 'DELETE', $discountId, $params, null);
+
+        if (isset($response['Discount']) && $this->itemsCount($response) > 0) {
+            return $response['Discount'];
+        }
+
+        return [];
+    }
+    
     /**
      * @param int $saleId
      * @param array $data
