@@ -56,10 +56,6 @@ class Lightspeed extends AbstractProvider
      */
     public function getAccessToken($grant = 'authorization_code', array $params = [])
     {
-        if (isset($params['refresh_token'])) {
-            throw new LightspeedProviderException('Lightspeed does not support token refreshing.');
-        }
-
         return parent::getAccessToken($grant, $params);
     }
 
