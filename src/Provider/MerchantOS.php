@@ -81,7 +81,7 @@ class MerchantOS extends Lightspeed
 
         return [];
     }
-    
+
     /**
      * @param $itemId
      * @param $params
@@ -307,17 +307,34 @@ class MerchantOS extends Lightspeed
     }
 
     /**
+     * @param $params
      * @return mixed
      */
-    public function getShops()
+    public function getShops($params = [])
     {
-        $params = [];
         $response = $this->makeAPICall('Account.Shop', 'GET', null, $params, null);
 
         //validate the response
         if (isset($response['Shop']) && $this->itemsCount($response) == 1) {
             return [$response['Shop']];
         } elseif (isset($response['Shop']) && $this->itemsCount($response) > 1) {
+            return $response['Shop'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $shopId
+     * @param $params
+     * @return mixed
+     */
+    public function getShop($shopId, $params = [])
+    {
+        $response = $this->makeAPICall('Account.Shop', 'GET', $shopId, $params, null);
+
+        //validate the response
+        if (isset($response['Shop']) && $this->itemsCount($response) == 1) {
             return $response['Shop'];
         }
 
@@ -555,7 +572,7 @@ class MerchantOS extends Lightspeed
 
         return [];
     }
-    
+
     /**
      * @param int $saleId
      * @param array $data
@@ -579,7 +596,7 @@ class MerchantOS extends Lightspeed
     public function getCreditAccount($params = [])
     {
         $response = $this->makeAPICall('Account.CreditAccount', 'GET', null, $params, null);
-        
+
         if (isset($response['CreditAccount']) && $this->itemsCount($response) > 0) {
             return $response['CreditAccount'];
         }
@@ -595,10 +612,50 @@ class MerchantOS extends Lightspeed
     public function createCreditAccount($creditAccountId, $data = [])
     {
         $response = $this->makeAPICall('Account.CreditAccount', 'PUT', $creditAccountId, [], $data);
-        
+
         if (isset($response['CreditAccount']) && $this->itemsCount($response) > 0) {
             return $response['CreditAccount'];
         }
+
+        return [];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function accounts()
+    {
+        $response = $this->makeAPICall('Account', 'GET', null, [], []);
+
+        if (isset($response['Account']) && $this->itemsCount($response) > 0) {
+            return $response['Account'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConfig()
+    {
+        $response = $this->makeAPICall('Account.Config', 'GET', null, [], []);
+
+        if (isset($response['Config'])) {
+            return $response['Config'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOptions()
+    {
+        $response = $this->makeAPICall('Account.Option', 'GET', null, [], []);
+
+        return $response;
 
         return [];
     }
