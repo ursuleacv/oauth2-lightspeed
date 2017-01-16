@@ -545,7 +545,7 @@ class MerchantOS extends Lightspeed
      * @param $data
      * @return mixed
      */
-    public function updateDiscount($discountId = null, $data)
+    public function updateDiscount($discountId, $data)
     {
         $params = [];
         $response = $this->makeAPICall('Account.Discount', 'PUT', $discountId, $params, $data);
