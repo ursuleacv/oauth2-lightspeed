@@ -508,6 +508,24 @@ class MerchantOS extends Lightspeed
     }
 
     /**
+     * @param array $params
+     * @return mixed
+     */
+    public function getEmployees($params = [])
+    {
+        $response = $this->makeAPICall('Account.Employee', 'GET', null, $params, null);
+
+        //validate the response
+        if (isset($response['Employee']) && $this->itemsCount($response) == 1) {
+            return [$response['Employee']];
+        } elseif (isset($response['Employee']) && $this->itemsCount($response) > 0) {
+            return $response['Employee'];
+        }
+
+        return [];
+    }
+
+    /**
      * @param $discountId
      * @return mixed
      */
