@@ -744,7 +744,7 @@ class MerchantOS extends Lightspeed
      * @param array $data
      * @return string
      */
-    protected function buildQueryString($data)
+    protected function buildQueryString(array $data)
     {
         if (function_exists('http_build_query')) {
             return http_build_query($data);
