@@ -102,14 +102,6 @@ class LightspeedTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('long-lived-token', $token->getToken());
     }
 
-    /**
-     * @expectedException \League\OAuth2\Client\Provider\Exception\LightspeedProviderException
-     */
-    public function testTryingToRefreshAnAccessTokenWillThrow()
-    {
-        $this->provider->getAccessToken('foo', ['refresh_token' => 'foo_token']);
-    }
-
     public function testScopes()
     {
         $this->assertEquals(['employee:all'], $this->provider->getDefaultScopes());
