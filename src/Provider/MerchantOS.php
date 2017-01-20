@@ -367,6 +367,24 @@ class MerchantOS extends Lightspeed
     }
 
     /**
+     * @param array $params
+     * @return mixed
+     */
+    public function getCustomers($params)
+    {
+        $response = $this->makeAPICall('Account.Customer', 'GET', null, $params, null);
+
+        //validate the response
+        if (isset($response['Customer']) && $this->itemsCount($response) == 1) {
+            return [$response['Customer']];
+        } elseif (isset($response['Customer']) && $this->itemsCount($response) > 1) {
+            return $response['Customer'];
+        }
+
+        return [];
+    }
+
+    /**
      * @param int $customerId
      * @param array $data
      * @return mixed
@@ -674,6 +692,18 @@ class MerchantOS extends Lightspeed
         $response = $this->makeAPICall('Account.Option', 'GET', null, [], []);
 
         return $response;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLocale()
+    {
+        $response = $this->makeAPICall('Locale', 'GET', null, [], []);
+
+        if (isset($response['Locale'])) {
+            return $response['Locale'];
+        }
 
         return [];
     }
