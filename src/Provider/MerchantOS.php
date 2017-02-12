@@ -29,6 +29,11 @@ class MerchantOS extends Lightspeed
     private $context = ['error' => false, 'apiCall' => ''];
 
     /**
+     * @var mixed
+     */
+    private $requestHeaders;
+
+    /**
      * Creates new MerchantOS
      *
      * @param AccessToken $token
@@ -46,6 +51,11 @@ class MerchantOS extends Lightspeed
     public function setUserAgent($agent)
     {
         $this->userAgent = $agent;
+    }
+
+    public function getRequestHeaders()
+    {
+        return $this->requestHeaders;
     }
 
     /**
@@ -544,6 +554,23 @@ class MerchantOS extends Lightspeed
     }
 
     /**
+     * @param $params
+     * @return mixed
+     */
+    public function getDiscounts($params = [])
+    {
+        $response = $this->makeAPICall('Account.Discount', 'GET', null, $params, null);
+
+        if (isset($response['Discount']) && $this->itemsCount($response) == 1) {
+            return [$response['Discount']];
+        } elseif (isset($response['Discount']) && $this->itemsCount($response) > 0) {
+            return $response['Discount'];
+        }
+
+        return [];
+    }
+
+    /**
      * @param $discountId
      * @return mixed
      */
@@ -735,7 +762,8 @@ class MerchantOS extends Lightspeed
         $client = new \GuzzleHttp\Client();
         $response = $client->request($action, $url, ['headers' => $headers, 'json' => $data]);
 
-        // print_r($response->getHeader('x-ls-api-bucket-level')); die;
+        //set response headers
+        $this->requestHeaders = $response->getHeaders();
 
         $body = (string) $response->getBody();
         $r = json_decode($body, true);
