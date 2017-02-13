@@ -415,6 +415,24 @@ class MerchantOS extends Lightspeed
     }
 
     /**
+     * @param array $params
+     * @return mixed
+     */
+    public function getCustomFields($params)
+    {
+        $response = $this->makeAPICall('Account.Customer/CustomField', 'GET', null, $params, null);
+
+        //validate the response
+        if (isset($response['CustomField']) && $this->itemsCount($response) == 1) {
+            return [$response['CustomField']];
+        } elseif (isset($response['CustomField']) && $this->itemsCount($response) > 1) {
+            return $response['CustomField'];
+        }
+
+        return [];
+    }
+
+    /**
      * @return mixed
      */
     public function getCustomField($customFieldId)
