@@ -26,12 +26,16 @@ class MerchantOS extends Lightspeed
     /**
      * @var array
      */
-    private $context = ['error' => false, 'apiCall' => ''];
+    private $context = ['error' => false, 'apiCall' => '', 'action' => ''];
 
     /**
      * @var mixed
      */
     private $requestHeaders;
+
+    public $allowSleep = false;
+
+    public $debugMode = false;
 
     /**
      * Creates new MerchantOS
@@ -56,6 +60,11 @@ class MerchantOS extends Lightspeed
     public function getRequestHeaders()
     {
         return $this->requestHeaders;
+    }
+
+    public function getContext()
+    {
+        return $this->context;
     }
 
     /**
@@ -763,19 +772,22 @@ class MerchantOS extends Lightspeed
      */
     public function makeAPICall($controlUrl, $action, $uniqueId, $params, $data)
     {
-        $this->context['apiCall'] = $controlUrl;
-
         if (is_null($data) || $data == '') {
             $data = [];
         }
 
         $url = $this->prepareApiUrl($controlUrl, $this->accountId, $uniqueId, $params);
 
+        $this->context['apiCall'] = $url;
+        $this->context['action'] = strtoupper($action);
+
         $headers = [
             'User-Agent' => $this->userAgent,
             'Accept' => 'application/vnd.merchantos-v2+json',
             'Authorization' => 'Bearer ' . $this->oauthToken,
         ];
+
+        $this->sleepIfNecessary();
 
         $client = new \GuzzleHttp\Client();
         $response = $client->request($action, $url, ['headers' => $headers, 'json' => $data]);
@@ -859,5 +871,65 @@ class MerchantOS extends Lightspeed
         }
 
         return 0;
+    }
+
+    /**
+     * @param $headers
+     * @return null
+     */
+    protected function sleepIfNecessary()
+    {
+        if (!$this->allowSleep) {
+            return;
+        }
+
+        if (!$this->requestHeaders) {
+            return;
+        }
+
+        $headers = $this->requestHeaders;
+
+        if (!isset($headers['X-LS-API-Bucket-Level'][0])) {
+            return;
+        }
+
+        $bucketLevelStr = $headers['X-LS-API-Bucket-Level'][0];
+
+        list($currentLevel, $bucketSize) = explode('/', $bucketLevelStr);
+
+        //The drip rate is calculated by dividing the bucket size by 60 seconds.
+        $dripRate = $bucketSize / 60;
+
+        //remaining units until the limit is reached
+        $available = $bucketSize - $currentLevel;
+
+        //get the units neded for the next request
+        $units = $this->getMethodUnits();
+
+        if ($units >= $available) {
+            //if not enough - sleep for a while
+            $neededUnits = $units - $available;
+            $sleepTime = ceil($neededUnits / $dripRate);
+
+            if ($debugMode) {
+                $logMessage = 'Too many requests Account=' . $this->accountId;
+                $logMessage .= ' X-LS-API-Bucket=' . $bucketLevelStr;
+                $logMessage .= ' Units Next Request=' . $units;
+                $logMessage .= ' Sleeping=' . $sleepTime . 'sec';
+                $logMessage .= ' Req=' . $this->context['action'] .' ' . $this->context['apiCall'];
+                error_log($logMessage);
+            }
+
+            sleep($sleepTime);
+        }
+    }
+
+    private function getMethodUnits()
+    {
+        if ($this->context['action'] == 'GET') {
+            return 1;
+        } elseif (in_array($this->context['action'], ['POST', 'PUT', 'DELETE'])) {
+            return 10;
+        }
     }
 }
