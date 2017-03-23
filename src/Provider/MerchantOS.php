@@ -33,6 +33,8 @@ class MerchantOS extends Lightspeed
      */
     private $requestHeaders;
 
+    private $logMessage;
+
     public $allowSleep = false;
 
     public $debugMode = false;
@@ -65,6 +67,11 @@ class MerchantOS extends Lightspeed
     public function getContext()
     {
         return $this->context;
+    }
+
+    public function getLogMessage()
+    {
+        return $this->logMessage;
     }
 
     /**
@@ -795,6 +802,13 @@ class MerchantOS extends Lightspeed
         //set response headers
         $this->requestHeaders = $response->getHeaders();
 
+        if ($this->debugMode) {
+            $logMessage = ' Account=' . $this->accountId;
+            $logMessage .= ' X-LS-API-Bucket=' . $this->requestHeaders['X-LS-API-Bucket-Level'][0];
+            $logMessage .= ' Req=' . $this->context['action'] . ' ' . $this->context['apiCall'];
+            $this->logMessage = $logMessage;
+        }
+
         $body = (string) $response->getBody();
         $r = json_decode($body, true);
 
@@ -911,12 +925,14 @@ class MerchantOS extends Lightspeed
             $neededUnits = $units - $available;
             $sleepTime = ceil($neededUnits / $dripRate);
 
-            if ($debugMode) {
+            if ($this->debugMode) {
                 $logMessage = 'Too many requests Account=' . $this->accountId;
                 $logMessage .= ' X-LS-API-Bucket=' . $bucketLevelStr;
                 $logMessage .= ' Units Next Request=' . $units;
                 $logMessage .= ' Sleeping=' . $sleepTime . 'sec';
-                $logMessage .= ' Req=' . $this->context['action'] .' ' . $this->context['apiCall'];
+                $logMessage .= ' Req=' . $this->context['action'] . ' ' . $this->context['apiCall'];
+
+                $this->logMessage = $logMessage;
                 error_log($logMessage);
             }
 
