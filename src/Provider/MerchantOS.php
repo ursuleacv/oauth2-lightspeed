@@ -192,12 +192,20 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param $saleId
+     * @param int $saleId
+     * @param array $params
      * @return mixed
      */
-    public function getSale($saleId)
+    public function getSale($saleId, $params = [])
     {
-        $params = ['load_relations' => 'all', 'orderby' => 'saleLineID', 'orderby_desc' => 1];
+        if (empty($params)) {
+            $params = [
+                'load_relations' => '["SaleLines","SaleLines.Item","Customer","Customer.Contact"]',
+                'orderby' => 'saleLineID',
+                'orderby_desc' => 1,
+            ];
+        }
+
         $response = $this->makeAPICall('Account.Sale', 'GET', $saleId, $params, null);
 
         if (isset($response['Sale']) && $this->itemsCount($response) > 0) {
@@ -371,14 +379,16 @@ class MerchantOS extends Lightspeed
      * @param int $customerId
      * @return mixed
      */
-    public function getCustomer($customerId)
+    public function getCustomer($customerId, $params = [])
     {
-        $params = array(
-            'archived' => 0,
-            'limit' => '1',
-            'load_relations' => 'all',
-            'customerID' => $customerId,
-        );
+        if (empty($params)) {
+            $params = [
+                'load_relations' => '["Contact","Tags","CustomerType"]',
+                'customerID' => $customerId,
+                'archived' => 0,
+                'limit' => '1',
+            ];
+        }
 
         $response = $this->makeAPICall('Account.Customer', 'GET', null, $params, null);
 
@@ -451,14 +461,15 @@ class MerchantOS extends Lightspeed
     /**
      * @return mixed
      */
-    public function getCustomField($customFieldId)
+    public function getCustomField($customFieldId, $params = [])
     {
-        $params = array(
-            'archived' => 0,
-            'limit' => '1',
-            'load_relations' => 'all',
-            'customFieldID' => $customFieldId,
-        );
+        if (empty($params)) {
+            $params = [
+                'customFieldID' => $customFieldId,
+                'archived' => 0,
+                'limit' => '1',
+            ];
+        }
 
         $response = $this->makeAPICall('Account.Customer/CustomField', 'GET', null, $params, null);
 
@@ -550,14 +561,16 @@ class MerchantOS extends Lightspeed
      * @param int $employeeId
      * @return mixed
      */
-    public function getEmployee($employeeId)
+    public function getEmployee($employeeId, $params = [])
     {
-        $params = array(
-            'archived' => 0,
-            'limit' => '1',
-            'load_relations' => 'all',
-            'employeeID' => $employeeId,
-        );
+        if (empty($params)) {
+            $params = [
+                'load_relations' => '["Contact","EmployeeRole"]',
+                'employeeID' => $employeeId,
+                'archived' => 0,
+                'limit' => '1',
+            ];
+        }
 
         $response = $this->makeAPICall('Account.Employee', 'GET', $employeeId, $params, null);
 
@@ -933,7 +946,7 @@ class MerchantOS extends Lightspeed
                 $logMessage .= ' Req=' . $this->context['action'] . ' ' . $this->context['apiCall'];
 
                 $this->logMessage = $logMessage;
-                error_log($logMessage);
+                // error_log($logMessage);
             }
 
             sleep($sleepTime);

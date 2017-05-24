@@ -2,7 +2,7 @@
     "name": "ursuleacv/oauth2-lightspeed",
     "description": "LightSpeed OAuth 2.0 Client Provider for The PHP League OAuth2-Client",
     "license": "MIT",
-    "version": "2.0.19",
+    "version": "2.0.20",
     "authors": [
         {
             "name": "Valentin Ursuleac",
