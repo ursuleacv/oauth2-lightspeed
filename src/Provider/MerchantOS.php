@@ -35,6 +35,8 @@ class MerchantOS extends Lightspeed
 
     private $logMessage;
 
+    private $itemsCount;
+
     public $allowSleep = false;
 
     public $debugMode = false;
@@ -72,6 +74,45 @@ class MerchantOS extends Lightspeed
     public function getLogMessage()
     {
         return $this->logMessage;
+    }
+
+    public function getItemsCount()
+    {
+        return $this->itemsCount;
+    }
+
+    /**
+     * @param $vendorId
+     * @param $params
+     * @return mixed
+     */
+    public function getVendor($vendorId, $params = [])
+    {
+        $response = $this->makeAPICall('Account.Vendor', 'GET', $vendorId, $params, null);
+
+        //validate the response
+        if (isset($response['Vendor']) && $this->itemsCount($response) == 1) {
+            return $response['Vendor'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $params
+     * @return array
+     */
+    public function getVendors($params = [])
+    {
+        $response = $this->makeAPICall('Account.Vendor', 'GET', null, $params, null);
+
+        if (isset($response['Vendor']) && $this->itemsCount($response) == 1) {
+            return [$response['Vendor']];
+        } elseif (isset($response['Vendor']) && $this->itemsCount($response) > 1) {
+            return $response['Vendor'];
+        }
+
+        return [];
     }
 
     /**
@@ -824,6 +865,10 @@ class MerchantOS extends Lightspeed
 
         $body = (string) $response->getBody();
         $r = json_decode($body, true);
+
+        if (isset($r['@attributes'])) {
+            $this->itemsCount = $r['@attributes']['count'];
+        }
 
         $this->checkApiResponse($r);
         return $r;
