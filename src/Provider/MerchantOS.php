@@ -37,6 +37,8 @@ class MerchantOS extends Lightspeed
 
     private $itemsCount;
 
+    private $connectTimeout = 0;
+
     public $allowSleep = false;
 
     public $debugMode = false;
@@ -79,6 +81,19 @@ class MerchantOS extends Lightspeed
     public function getItemsCount()
     {
         return $this->itemsCount;
+    }
+
+    /**
+     * @param $seconds
+     */
+    public function setConnectTimeout($seconds)
+    {
+        $this->connectTimeout = $seconds;
+    }
+
+    public function getConnectTimeout()
+    {
+        return $this->connectTimeout;
     }
 
     /**
@@ -851,7 +866,16 @@ class MerchantOS extends Lightspeed
         $this->sleepIfNecessary();
 
         $client = new \GuzzleHttp\Client();
-        $response = $client->request($action, $url, ['headers' => $headers, 'json' => $data]);
+
+        if ($this->connectTimeout > 0) {
+            $response = $client->request($action, $url, [
+                'headers' => $headers,
+                'json' => $data,
+                'connect_timeout' => $this->connectTimeout
+            ]);
+        } else {
+            $response = $client->request($action, $url, ['headers' => $headers, 'json' => $data]);
+        }
 
         //set response headers
         $this->requestHeaders = $response->getHeaders();
