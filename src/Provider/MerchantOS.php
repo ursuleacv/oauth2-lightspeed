@@ -307,12 +307,29 @@ class MerchantOS extends Lightspeed
 
     /**
      * @param int $saleId
-     * @param int $limit
+     * @param array $params
      * @return mixed
      */
     public function getSaleSaleLines($saleId, $params = [])
     {
         $response = $this->makeAPICall('Account.Sale' . '/' . $saleId . '/SaleLine', 'GET', null, $params, null);
+
+        if (isset($response['SaleLine']) && $this->itemsCount($response) == 1) {
+            return [$response['SaleLine']];
+        } elseif (isset($response['SaleLine']) && $this->itemsCount($response) > 1) {
+            return $response['SaleLine'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param array $params
+     * @return mixed
+     */
+    public function getSaleLines($params = [])
+    {
+        $response = $this->makeAPICall('Account.SaleLine', 'GET', null, $params, null);
 
         if (isset($response['SaleLine']) && $this->itemsCount($response) == 1) {
             return [$response['SaleLine']];
