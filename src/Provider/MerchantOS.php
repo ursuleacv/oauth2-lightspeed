@@ -457,13 +457,11 @@ class MerchantOS extends Lightspeed
         if (empty($params)) {
             $params = [
                 'load_relations' => '["Contact","Tags","CustomerType"]',
-                'customerID' => $customerId,
                 'archived' => 0,
-                'limit' => '1',
             ];
         }
 
-        $response = $this->makeAPICall('Account.Customer', 'GET', null, $params, null);
+        $response = $this->makeAPICall('Account.Customer', 'GET', $customerId, $params, null);
 
         //validate the response
         if (isset($response['Customer']) && $this->itemsCount($response) == 1) {
