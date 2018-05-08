@@ -574,6 +574,68 @@ class MerchantOS extends Lightspeed
     }
 
     /**
+     * @param integer $customFieldId
+     * @param array $params
+     * @return mixed
+     */
+    public function getAllCustomFieldChoices($customFieldId, $params = [])
+    {
+        $response = $this->makeAPICall('Account.Customer/CustomField/'
+            . $customFieldId . '/CustomFieldChoice', 'GET', null, $params, null);
+
+        //validate the response
+        if (isset($response['CustomFieldChoice']) && $this->itemsCount($response) == 1) {
+            return [$response['CustomFieldChoice']];
+        } elseif (isset($response['CustomFieldChoice']) && $this->itemsCount($response) > 1) {
+            return $response['CustomFieldChoice'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param integer $customFieldId
+     * @param integer $customFieldChoiceID
+     * @param array $params
+     * @return mixed
+     */
+    public function getCustomFieldChoice($customFieldId, $customFieldChoiceID, $params = [])
+    {
+        $response = $this->makeAPICall('Account.Customer/CustomField/'
+            . $customFieldId . '/CustomFieldChoice', 'GET', $customFieldChoiceID, $params, null);
+
+        //validate the response
+        if (isset($response['CustomFieldChoice']) && $this->itemsCount($response) == 1) {
+            return $response['CustomFieldChoice'];
+        } elseif (isset($response['CustomFieldChoice']) && $this->itemsCount($response) > 1) {
+            return $response['CustomFieldChoice'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param integer $customFieldId
+     * @param array $data
+     * @return mixed
+     */
+    public function createCustomFieldChoice($customFieldId, $data)
+    {
+        $params = [];
+        $response = $this->makeAPICall('Account.Customer/CustomField/'
+            . $customFieldId . '/CustomFieldChoice', 'POST', null, $params, $data);
+
+        //validate the response
+        if (isset($response['CustomFieldChoice']) && $this->itemsCount($response) == 1) {
+            return $response['CustomFieldChoice'];
+        } elseif (isset($response['CustomFieldChoice']) && $this->itemsCount($response) > 1) {
+            return $response['CustomFieldChoice'];
+        }
+
+        return [];
+    }
+
+    /**
      * @param array $data
      * @return mixed
      */
@@ -886,7 +948,7 @@ class MerchantOS extends Lightspeed
             $response = $client->request($action, $url, [
                 'headers' => $headers,
                 'json' => $data,
-                'connect_timeout' => $this->connectTimeout
+                'connect_timeout' => $this->connectTimeout,
             ]);
         } else {
             $response = $client->request($action, $url, ['headers' => $headers, 'json' => $data]);
