@@ -151,6 +151,23 @@ class MerchantOS extends Lightspeed
      * @param $params
      * @return array
      */
+    public function getCustomerTypes($params = [])
+    {
+        $response = $this->makeAPICall('Account.CustomerType', 'GET', null, $params, null);
+
+        if (isset($response['CustomerType']) && $this->itemsCount($response) == 1) {
+            return [$response['CustomerType']];
+        } elseif (isset($response['CustomerType']) && $this->itemsCount($response) > 1) {
+            return $response['CustomerType'];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param $params
+     * @return array
+     */
     public function getCategories($params = [])
     {
         $response = $this->makeAPICall('Account.Category', 'GET', null, $params, null);
