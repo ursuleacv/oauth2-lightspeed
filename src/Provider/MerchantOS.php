@@ -509,6 +509,24 @@ class MerchantOS extends Lightspeed
     }
 
     /**
+     * @param array $data
+     * @return mixed
+     */
+    public function createCustomer($data)
+    {
+        $response = $this->makeAPICall('Account.Customer', 'POST', null, [], $data);
+
+        //validate the response
+        if (isset($response['Customer']) && $this->itemsCount($response) == 1) {
+            return $response['Customer'];
+        } elseif (isset($response['Customer']) && $this->itemsCount($response) > 1) {
+            return $response['Customer'];
+        }
+
+        return [];
+    }
+
+    /**
      * @param int $customerId
      * @param array $data
      * @return mixed
