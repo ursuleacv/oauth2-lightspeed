@@ -2,6 +2,7 @@
 
 namespace League\OAuth2\Client\Provider;
 
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 
 class MerchantOS extends Lightspeed
@@ -98,8 +99,10 @@ class MerchantOS extends Lightspeed
 
     /**
      * @param $vendorId
-     * @param $params
+     * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getVendor($vendorId, $params = [])
     {
@@ -114,77 +117,94 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return array
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getVendors($params = [])
     {
         $response = $this->makeAPICall('Account.Vendor', 'GET', null, $params, null);
 
-        if (isset($response['Vendor']) && $this->itemsCount($response) == 1) {
-            return [$response['Vendor']];
-        } elseif (isset($response['Vendor']) && $this->itemsCount($response) > 1) {
-            return $response['Vendor'];
+        if (isset($response['Vendor'])) {
+            if (isset($response['Vendor'][0])) {
+                return $response['Vendor'];
+            } else {
+                return [$response['Vendor']];
+            }
         }
 
         return [];
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return array
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getTags($params = [])
     {
         $response = $this->makeAPICall('Account.Tag', 'GET', null, $params, null);
 
-        if (isset($response['Tag']) && $this->itemsCount($response) == 1) {
-            return [$response['Tag']];
-        } elseif (isset($response['Tag']) && $this->itemsCount($response) > 1) {
-            return $response['Tag'];
+        if (isset($response['Tag'])) {
+            if (isset($response['Tag'][0])) {
+                return $response['Tag'];
+            } else {
+                return [$response['Tag']];
+            }
         }
 
         return [];
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return array
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getCustomerTypes($params = [])
     {
         $response = $this->makeAPICall('Account.CustomerType', 'GET', null, $params, null);
 
-        if (isset($response['CustomerType']) && $this->itemsCount($response) == 1) {
-            return [$response['CustomerType']];
-        } elseif (isset($response['CustomerType']) && $this->itemsCount($response) > 1) {
-            return $response['CustomerType'];
+        if (isset($response['CustomerType'])) {
+            if (isset($response['CustomerType'][0])) {
+                return $response['CustomerType'];
+            } else {
+                return [$response['CustomerType']];
+            }
         }
 
         return [];
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return array
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getCategories($params = [])
     {
         $response = $this->makeAPICall('Account.Category', 'GET', null, $params, null);
 
-        if (isset($response['Category']) && $this->itemsCount($response) == 1) {
-            return [$response['Category']];
-        } elseif (isset($response['Category']) && $this->itemsCount($response) > 1) {
-            return $response['Category'];
+        if (isset($response['Category'])) {
+            if (isset($response['Category'][0])) {
+                return $response['Category'];
+            } else {
+                return [$response['Category']];
+            }
         }
-
         return [];
     }
 
     /**
      * @param $itemId
-     * @param $params
+     * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getItem($itemId, $params = [])
     {
@@ -198,26 +218,31 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return array
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getItems($params = [])
     {
         $response = $this->makeAPICall('Account.Item', 'GET', null, $params, null);
 
-        if (isset($response['Item']) && $this->itemsCount($response) == 1) {
-            return [$response['Item']];
-        } elseif (isset($response['Item']) && $this->itemsCount($response) > 1) {
-            return $response['Item'];
+        if (isset($response['Item'])) {
+            if (isset($response['Item'][0])) {
+                return $response['Item'];
+            } else {
+                return [$response['Item']];
+            }
         }
 
         return [];
     }
 
     /**
-     * @param $itemId
      * @param $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createItem($data)
     {
@@ -234,6 +259,8 @@ class MerchantOS extends Lightspeed
     /**
      * @param $itemId
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function deleteItem($itemId)
     {
@@ -251,6 +278,8 @@ class MerchantOS extends Lightspeed
      * @param $itemId
      * @param $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function updateItem($itemId, $data)
     {
@@ -268,6 +297,8 @@ class MerchantOS extends Lightspeed
      * @param int $saleId
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getSale($saleId, $params = [])
     {
@@ -292,6 +323,8 @@ class MerchantOS extends Lightspeed
      * @param int $saleId
      * @param array $saleData
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function updateSale($saleId, $saleData)
     {
@@ -308,15 +341,19 @@ class MerchantOS extends Lightspeed
     /**
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getSales($params = [])
     {
         $response = $this->makeAPICall('Account.Sale', 'GET', null, $params, null);
 
-        if (isset($response['Sale']) && $this->itemsCount($response) == 1) {
-            return [$response['Sale']];
-        } elseif (isset($response['Sale']) && $this->itemsCount($response) > 1) {
-            return $response['Sale'];
+        if (isset($response['Sale'])) {
+            if (isset($response['Sale'][0])) {
+                return $response['Sale'];
+            } else {
+                return [$response['Sale']];
+            }
         }
 
         return [];
@@ -326,15 +363,19 @@ class MerchantOS extends Lightspeed
      * @param int $saleId
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getSaleSaleLines($saleId, $params = [])
     {
         $response = $this->makeAPICall('Account.Sale' . '/' . $saleId . '/SaleLine', 'GET', null, $params, null);
 
-        if (isset($response['SaleLine']) && $this->itemsCount($response) == 1) {
-            return [$response['SaleLine']];
-        } elseif (isset($response['SaleLine']) && $this->itemsCount($response) > 1) {
-            return $response['SaleLine'];
+        if (isset($response['SaleLine'])) {
+            if (isset($response['SaleLine'][0])) {
+                return $response['SaleLine'];
+            } else {
+                return [$response['SaleLine']];
+            }
         }
 
         return [];
@@ -343,24 +384,28 @@ class MerchantOS extends Lightspeed
     /**
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getSaleLines($params = [])
     {
         $response = $this->makeAPICall('Account.SaleLine', 'GET', null, $params, null);
 
-        if (isset($response['SaleLine']) && $this->itemsCount($response) == 1) {
-            return [$response['SaleLine']];
-        } elseif (isset($response['SaleLine']) && $this->itemsCount($response) > 1) {
-            return $response['SaleLine'];
+        if (isset($response['SaleLine'])) {
+            if (isset($response['SaleLine'][0])) {
+                return $response['SaleLine'];
+            } else {
+                return [$response['SaleLine']];
+            }
         }
-
         return [];
     }
 
     /**
-     * @param int $saleId
-     * @param int $limit
+     * @param $saleLineId
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getSaleLine($saleLineId)
     {
@@ -379,6 +424,8 @@ class MerchantOS extends Lightspeed
      * @param $saleLineId
      * @param $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function updateSaleLine($saleId, $saleLineId, $data)
     {
@@ -398,6 +445,8 @@ class MerchantOS extends Lightspeed
      * @param $saleId
      * @param $saleLineId
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function deleteSaleLine($saleId, $saleLineId)
     {
@@ -412,10 +461,13 @@ class MerchantOS extends Lightspeed
 
         return [];
     }
+
     /**
      * @param $saleId
      * @param $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createSaleLine($saleId, $data)
     {
@@ -431,18 +483,22 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getShops($params = [])
     {
         $response = $this->makeAPICall('Account.Shop', 'GET', null, $params, null);
 
         //validate the response
-        if (isset($response['Shop']) && $this->itemsCount($response) == 1) {
-            return [$response['Shop']];
-        } elseif (isset($response['Shop']) && $this->itemsCount($response) > 1) {
-            return $response['Shop'];
+        if (isset($response['Shop'])) {
+            if (isset($response['Shop'][0])) {
+                return $response['Shop'];
+            } else {
+                return [$response['Shop']];
+            }
         }
 
         return [];
@@ -450,8 +506,10 @@ class MerchantOS extends Lightspeed
 
     /**
      * @param $shopId
-     * @param $params
+     * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getShop($shopId, $params = [])
     {
@@ -467,7 +525,10 @@ class MerchantOS extends Lightspeed
 
     /**
      * @param int $customerId
+     * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getCustomer($customerId, $params = [])
     {
@@ -493,16 +554,20 @@ class MerchantOS extends Lightspeed
     /**
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getCustomers($params)
     {
         $response = $this->makeAPICall('Account.Customer', 'GET', null, $params, null);
 
         //validate the response
-        if (isset($response['Customer']) && $this->itemsCount($response) == 1) {
-            return [$response['Customer']];
-        } elseif (isset($response['Customer']) && $this->itemsCount($response) > 1) {
-            return $response['Customer'];
+        if (isset($response['Customer'])) {
+            if (isset($response['Customer'][0])) {
+                return $response['Customer'];
+            } else {
+                return [$response['Customer']];
+            }
         }
 
         return [];
@@ -511,6 +576,8 @@ class MerchantOS extends Lightspeed
     /**
      * @param array $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createCustomer($data)
     {
@@ -530,6 +597,8 @@ class MerchantOS extends Lightspeed
      * @param int $customerId
      * @param array $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function updateCustomer($customerId, $data)
     {
@@ -549,23 +618,31 @@ class MerchantOS extends Lightspeed
     /**
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getCustomFields($params)
     {
         $response = $this->makeAPICall('Account.Customer/CustomField', 'GET', null, $params, null);
 
         //validate the response
-        if (isset($response['CustomField']) && $this->itemsCount($response) == 1) {
-            return [$response['CustomField']];
-        } elseif (isset($response['CustomField']) && $this->itemsCount($response) > 1) {
-            return $response['CustomField'];
+        if (isset($response['CustomField'])) {
+            if (isset($response['CustomField'][0])) {
+                return $response['CustomField'];
+            } else {
+                return [$response['CustomField']];
+            }
         }
 
         return [];
     }
 
     /**
+     * @param $customFieldId
+     * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getCustomField($customFieldId, $params = [])
     {
@@ -592,6 +669,8 @@ class MerchantOS extends Lightspeed
     /**
      * @param array $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createCustomField($data)
     {
@@ -612,6 +691,8 @@ class MerchantOS extends Lightspeed
      * @param integer $customFieldId
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getAllCustomFieldChoices($customFieldId, $params = [])
     {
@@ -619,10 +700,12 @@ class MerchantOS extends Lightspeed
             . $customFieldId . '/CustomFieldChoice', 'GET', null, $params, null);
 
         //validate the response
-        if (isset($response['CustomFieldChoice']) && $this->itemsCount($response) == 1) {
-            return [$response['CustomFieldChoice']];
-        } elseif (isset($response['CustomFieldChoice']) && $this->itemsCount($response) > 1) {
-            return $response['CustomFieldChoice'];
+        if (isset($response['CustomFieldChoice'])) {
+            if (isset($response['CustomFieldChoice'][0])) {
+                return $response['CustomFieldChoice'];
+            } else {
+                return [$response['CustomFieldChoice']];
+            }
         }
 
         return [];
@@ -633,6 +716,8 @@ class MerchantOS extends Lightspeed
      * @param integer $customFieldChoiceID
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getCustomFieldChoice($customFieldId, $customFieldChoiceID, $params = [])
     {
@@ -653,6 +738,8 @@ class MerchantOS extends Lightspeed
      * @param integer $customFieldId
      * @param array $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createCustomFieldChoice($customFieldId, $data)
     {
@@ -673,6 +760,8 @@ class MerchantOS extends Lightspeed
     /**
      * @param array $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createTaxClass($data)
     {
@@ -693,6 +782,8 @@ class MerchantOS extends Lightspeed
      * @param int $taxClassId
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getTaxClass($taxClassId, $params)
     {
@@ -709,8 +800,10 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param array $data
+     * @param $customFieldId
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function deleteCustomField($customFieldId)
     {
@@ -727,7 +820,10 @@ class MerchantOS extends Lightspeed
 
     /**
      * @param int $employeeId
+     * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getEmployee($employeeId, $params = [])
     {
@@ -753,41 +849,50 @@ class MerchantOS extends Lightspeed
     /**
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getEmployees($params = [])
     {
         $response = $this->makeAPICall('Account.Employee', 'GET', null, $params, null);
 
         //validate the response
-        if (isset($response['Employee']) && $this->itemsCount($response) == 1) {
-            return [$response['Employee']];
-        } elseif (isset($response['Employee']) && $this->itemsCount($response) > 0) {
-            return $response['Employee'];
+        if (isset($response['Employee'])) {
+            if (isset($response['Employee'][0])) {
+                return $response['Employee'];
+            } else {
+                return [$response['Employee']];
+            }
         }
 
         return [];
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getDiscounts($params = [])
     {
         $response = $this->makeAPICall('Account.Discount', 'GET', null, $params, null);
 
-        if (isset($response['Discount']) && $this->itemsCount($response) == 1) {
-            return [$response['Discount']];
-        } elseif (isset($response['Discount']) && $this->itemsCount($response) > 0) {
-            return $response['Discount'];
+        if (isset($response['Discount'])) {
+            if (isset($response['Discount'][0])) {
+                return $response['Discount'];
+            } else {
+                return [$response['Discount']];
+            }
         }
-
         return [];
     }
 
     /**
      * @param $discountId
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getDiscount($discountId = null)
     {
@@ -804,6 +909,8 @@ class MerchantOS extends Lightspeed
     /**
      * @param $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createDiscount($data)
     {
@@ -822,6 +929,8 @@ class MerchantOS extends Lightspeed
      * @param $discountId
      * @param $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function updateDiscount($discountId, $data)
     {
@@ -838,6 +947,8 @@ class MerchantOS extends Lightspeed
     /**
      * @param $discountId
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function deleteDiscount($discountId = null)
     {
@@ -855,6 +966,8 @@ class MerchantOS extends Lightspeed
      * @param int $saleId
      * @param array $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createSaleRefund($saleId, $data = [])
     {
@@ -870,6 +983,8 @@ class MerchantOS extends Lightspeed
     /**
      * @param array $params
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getCreditAccount($params = [])
     {
@@ -886,6 +1001,8 @@ class MerchantOS extends Lightspeed
      * @param int $creditAccountId
      * @param array $data
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function createCreditAccount($creditAccountId, $data = [])
     {
@@ -900,6 +1017,8 @@ class MerchantOS extends Lightspeed
 
     /**
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function accounts()
     {
@@ -914,6 +1033,8 @@ class MerchantOS extends Lightspeed
 
     /**
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getConfig()
     {
@@ -928,6 +1049,8 @@ class MerchantOS extends Lightspeed
 
     /**
      * @return mixed
+     * @throws IdentityProviderException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function getOptions()
     {
@@ -938,6 +1061,8 @@ class MerchantOS extends Lightspeed
 
     /**
      * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws IdentityProviderException
      */
     public function getLocale()
     {
@@ -957,6 +1082,8 @@ class MerchantOS extends Lightspeed
      * @param $params
      * @param $data
      * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws IdentityProviderException
      */
     public function makeAPICall($controlUrl, $action, $uniqueId, $params, $data)
     {
@@ -1056,6 +1183,7 @@ class MerchantOS extends Lightspeed
 
     /**
      * @param $response
+     * @throws IdentityProviderException
      */
     private function checkApiResponse($response)
     {
@@ -1082,8 +1210,7 @@ class MerchantOS extends Lightspeed
     }
 
     /**
-     * @param $headers
-     * @return null
+     * @return void
      */
     protected function sleepIfNecessary()
     {
@@ -1111,7 +1238,7 @@ class MerchantOS extends Lightspeed
         //remaining units until the limit is reached
         $available = $bucketSize - $currentLevel;
 
-        //get the units neded for the next request
+        //get the units needed for the next request
         $units = $this->getMethodUnits();
 
         if ($units >= $available) {
@@ -1134,6 +1261,9 @@ class MerchantOS extends Lightspeed
         }
     }
 
+    /**
+     * @return int
+     */
     private function getMethodUnits()
     {
         if ($this->context['action'] == 'GET') {
@@ -1141,5 +1271,6 @@ class MerchantOS extends Lightspeed
         } elseif (in_array($this->context['action'], ['POST', 'PUT', 'DELETE'])) {
             return 10;
         }
+        return 1;
     }
 }

@@ -2,15 +2,13 @@
 
 namespace League\OAuth2\Client\Provider;
 
-use GuzzleHttp\Client;
+use InvalidArgumentException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
-use League\OAuth2\Client\Provider\Exception\LightspeedProviderException;
 use League\OAuth2\Client\Token\AccessToken;
 use Psr\Http\Message\ResponseInterface;
 
 class Lightspeed extends AbstractProvider
 {
-
     const LIGHTSPEED_API_URL = 'https://api.merchantos.com/API/';
     const LIGHTSPEED_REGISTRATION_ENDPOINT = 'https://cloud.merchantos.com/oauth/register.php';
     const LIGHTSPEED_AUTHORIZATION_ENDPOINT = 'https://cloud.merchantos.com/oauth/authorize.php';
@@ -39,6 +37,7 @@ class Lightspeed extends AbstractProvider
 
     /**
      * @param array $params
+     * @return string
      */
     public function getBaseAccessTokenUrl(array $params)
     {
@@ -53,6 +52,7 @@ class Lightspeed extends AbstractProvider
     /**
      * @param $grant
      * @param array $params
+     * @return AccessToken
      */
     public function getAccessToken($grant = 'authorization_code', array $params = [])
     {
@@ -65,8 +65,6 @@ class Lightspeed extends AbstractProvider
      * @param string $accessToken
      *
      * @return \League\OAuth2\Client\Token\AccessToken
-     *
-     * @throws LightspeedProviderException
      */
     public function getLongLivedAccessToken($accessToken)
     {
@@ -79,6 +77,7 @@ class Lightspeed extends AbstractProvider
 
     /**
      * @param AccessToken $token
+     * @return mixed
      */
     public function getAccountId(AccessToken $token)
     {
@@ -99,6 +98,7 @@ class Lightspeed extends AbstractProvider
     /**
      * @param array $response
      * @param AccessToken $token
+     * @return LightspeedResourceOwner
      */
     protected function createResourceOwner(array $response, AccessToken $token)
     {
@@ -106,8 +106,9 @@ class Lightspeed extends AbstractProvider
     }
 
     /**
-     * @param array $response
      * @param AccessToken $token
+     * @param $accountId
+     * @return MerchantOS
      */
     public function merchantosApi(AccessToken $token, $accountId)
     {
@@ -130,6 +131,7 @@ class Lightspeed extends AbstractProvider
     /**
      * @param ResponseInterface $response
      * @param $data
+     * @throws IdentityProviderException
      */
     protected function checkResponse(ResponseInterface $response, $data)
     {
