@@ -14,7 +14,7 @@ class FooLightspeedProvider extends Lightspeed
     }
 }
 
-class LightspeedTest extends \PHPUnit_Framework_TestCase
+class LightspeedTest extends \PHPUnit\Framework\TestCase
 {
 
     /**
