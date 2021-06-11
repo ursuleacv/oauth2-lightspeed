@@ -1120,8 +1120,9 @@ class MerchantOS extends Lightspeed
         $this->requestHeaders = $response->getHeaders();
 
         if ($this->debugMode) {
+            $bucketLevel = $this->requestHeaders['X-LS-API-Bucket-Level'][0] ?? '';
             $logMessage = ' Account=' . $this->accountId;
-            $logMessage .= ' X-LS-API-Bucket=' . $this->requestHeaders['X-LS-API-Bucket-Level'][0];
+            $logMessage .= ' X-LS-API-Bucket=' . $bucketLevel;
             $logMessage .= ' Req=' . $this->context['action'] . ' ' . $this->context['apiCall'];
             $this->logMessage = $logMessage;
         }
