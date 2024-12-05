@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: [8.1, 8.2, 8.3, 8.4, nightly]
+      fail-fast: false
+    continue-on-error: ${{ matrix.php-versions == 'nightly' }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    # Validate composer.json
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+
+    # Cache Composer packages
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    # Step to set up PHP
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        tools: composer
+        coverage: xdebug
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress --no-interaction
+
+    # Run PHP CodeSniffer
+    - name: Run PHP CodeSniffer
+      run: ./vendor/bin/phpcs --standard=psr2 --warning-severity=0 src/
+        
+    # Run PHPUnit
+    - name: Run PHPUnit
+      run: ./vendor/bin/phpunit --coverage-text
+
+    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
+    # Docs: https://getcomposer.org/doc/articles/scripts.md
+
+    # - name: Run test suite
+    #   run: composer run-script test
