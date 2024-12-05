@@ -10,8 +10,13 @@
             <directory suffix=".php">./tests/</directory>
         </testsuite>
     </testsuites>
-	<php>
+    <php>
         <ini name="display_errors" value="On" />
         <ini name="display_startup_errors" value="On" />
     </php>
+    <coverage includeUncoveredFiles="true">
+        <include>
+          <directory suffix=".php">src</directory>
+        </include>
+    </coverage>
 </phpunit>
