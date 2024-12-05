@@ -11,7 +11,7 @@ class LightspeedResourceOwnerTest extends \PHPUnit\Framework\TestCase
      */
     protected $account;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $arr = [
             '[@attributes' => [

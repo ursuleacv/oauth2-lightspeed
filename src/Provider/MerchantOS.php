@@ -15,11 +15,6 @@ class MerchantOS extends Lightspeed
     private $oauthToken;
 
     /**
-     * @var mixed
-     */
-    protected $accountId;
-
-    /**
      * @var string
      */
     protected $userAgent = 'MerchantOS';
@@ -50,10 +45,9 @@ class MerchantOS extends Lightspeed
      * @param AccessToken $token
      * @param mixed $accountId
      */
-    public function __construct(AccessToken $token, $accountId)
+    public function __construct(AccessToken $token, protected $accountId)
     {
         $this->oauthToken = $token->getToken();
-        $this->accountId = $accountId;
     }
 
     /**
@@ -1040,11 +1034,7 @@ class MerchantOS extends Lightspeed
     {
         $response = $this->makeAPICall('Account.Config', 'GET', null, [], []);
 
-        if (isset($response['Config'])) {
-            return $response['Config'];
-        }
-
-        return [];
+        return $response['Config'] ?? [];
     }
 
     /**
@@ -1068,11 +1058,7 @@ class MerchantOS extends Lightspeed
     {
         $response = $this->makeAPICall('Locale', 'GET', null, [], []);
 
-        if (isset($response['Locale'])) {
-            return $response['Locale'];
-        }
-
-        return [];
+        return $response['Locale'] ?? [];
     }
 
     /**
@@ -1094,7 +1080,7 @@ class MerchantOS extends Lightspeed
         $url = $this->prepareApiUrl($controlUrl, $this->accountId, $uniqueId, $params);
 
         $this->context['apiCall'] = $url;
-        $this->context['action'] = strtoupper($action);
+        $this->context['action'] = strtoupper((string) $action);
 
         $headers = [
             'User-Agent' => $this->userAgent,
@@ -1175,7 +1161,7 @@ class MerchantOS extends Lightspeed
         } else {
             $qs = '';
             foreach ($data as $key => $value) {
-                $append = urlencode($key) . '=' . urlencode($value);
+                $append = urlencode($key) . '=' . urlencode((string) $value);
                 $qs .= $qs ? '&' . $append : $append;
             }
             return $qs;
@@ -1231,7 +1217,7 @@ class MerchantOS extends Lightspeed
 
         $bucketLevelStr = $headers['X-LS-API-Bucket-Level'][0];
 
-        list($currentLevel, $bucketSize) = explode('/', $bucketLevelStr);
+        [$currentLevel, $bucketSize] = explode('/', (string) $bucketLevelStr);
 
         //The drip rate is calculated by dividing the bucket size by 60 seconds.
         $dripRate = $bucketSize / 60;

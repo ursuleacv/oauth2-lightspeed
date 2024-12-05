@@ -4,7 +4,7 @@ namespace League\OAuth2\Client\Grant;
 
 class LsExchangeToken extends AbstractGrant
 {
-    public function __toString()
+    public function __toString(): string
     {
         return 'ls_exchange_token';
     }
