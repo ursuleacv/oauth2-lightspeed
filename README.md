@@ -16,9 +16,10 @@ This package is compliant with [PSR-1][], [PSR-2][], [PSR-4][], and [PSR-7][]. I
 
 The following versions of PHP are supported.
 
-* PHP 7.0
-* PHP 7.1
-* PHP 7.2
+* PHP 8.1
+* PHP 8.2
+* PHP 8.3
+* PHP 8.4
 * HHVM
 
 ## Installation
@@ -28,7 +29,7 @@ Add the following to your `composer.json` file.
 ```json
 {
     "require": {
-        "ursuleacv/oauth2-lightspeed": "~2.0"
+        "ursuleacv/oauth2-lightspeed": "~3.0"
     }
 }
 ```
@@ -100,6 +101,12 @@ echo '</pre>';
 
 ``` bash
 $ ./vendor/bin/phpunit
+```
+
+## Upgrading
+
+```bash
+vendor/bin/rector process src --dry-run
 ```
 
 ## Contributing

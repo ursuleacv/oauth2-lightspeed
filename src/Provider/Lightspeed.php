@@ -5,6 +5,7 @@ namespace League\OAuth2\Client\Provider;
 use InvalidArgumentException;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
+use League\OAuth2\Client\Token\AccessTokenInterface;
 use Psr\Http\Message\ResponseInterface;
 
 class Lightspeed extends AbstractProvider
@@ -39,12 +40,12 @@ class Lightspeed extends AbstractProvider
      * @param array $params
      * @return string
      */
-    public function getBaseAccessTokenUrl(array $params)
+    public function getBaseAccessTokenUrl(array $params): string
     {
         return static::LIGHTSPEED_TOKEN_ENDPOINT;
     }
 
-    public function getDefaultScopes()
+    public function getDefaultScopes(): array
     {
         return ['employee:all'];
     }
@@ -54,7 +55,7 @@ class Lightspeed extends AbstractProvider
      * @param array $params
      * @return AccessToken
      */
-    public function getAccessToken($grant = 'authorization_code', array $params = [])
+    public function getAccessToken($grant = 'authorization_code', array $params = []): AccessTokenInterface
     {
         return parent::getAccessToken($grant, $params);
     }
@@ -66,7 +67,7 @@ class Lightspeed extends AbstractProvider
      *
      * @return \League\OAuth2\Client\Token\AccessToken
      */
-    public function getLongLivedAccessToken($accessToken)
+    public function getLongLivedAccessToken($accessToken): AccessTokenInterface
     {
         $params = [
             'ls_exchange_token' => (string) $accessToken,
@@ -90,7 +91,7 @@ class Lightspeed extends AbstractProvider
      * @param AccessToken $token
      * @return mixed
      */
-    public function getResourceOwnerDetailsUrl(AccessToken $token)
+    public function getResourceOwnerDetailsUrl(AccessToken $token): string
     {
         return $this->getBaseLightspeedApiUrl() . 'Account/.json?oauth_token=' . $token;
     }
