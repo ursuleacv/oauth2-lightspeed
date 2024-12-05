@@ -53,7 +53,7 @@ jobs:
         
     # Run PHPUnit
     - name: Run PHPUnit
-      run: ./vendor/bin/phpunit --coverage-text
+      run: XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-clover coverage.xml
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
